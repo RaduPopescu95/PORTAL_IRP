@@ -5,10 +5,10 @@ import { authentication, db } from "@/firebase";
 import { collection, getDocs, orderBy } from "firebase/firestore";
 import { query } from "firebase/database";
 
-// export const metadata = {
-//   title: "Portal || Portal",
-//   description: "Portal",
-// };
+export const metadata = {
+  title: "Portal || Portal",
+  description: "Portal",
+};
 
 const fetchItems = async (page) => {
   const collectionPath = `Comunicate`; // Replace with your actual path if needed
