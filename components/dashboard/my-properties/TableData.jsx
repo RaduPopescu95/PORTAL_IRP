@@ -84,7 +84,7 @@ const TableData = ({ oferte }) => {
   };
 
   if (!oferte || oferte.length === 0) {
-    return <p>Nu exista oferte adăugate.</p>; // Show a message if no data
+    return <p>Nu exista comunicate.</p>; // Show a message if no data
   }
 
   let theadConent = [];

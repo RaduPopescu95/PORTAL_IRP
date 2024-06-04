@@ -28,13 +28,13 @@ import { useCollectionPagination } from "@/hooks/useCollectionPagination";
 import { useDataWithPaginationAndSearch } from "@/hooks/useDataWithPaginationAndSearch";
 
 const index = ({ oferte }) => {
-  // const {
-  //   currentData,
-  //   setCurrentPage,
-  //   totalPages,
-  //   setSearchTerm,
-  //   currentPage,
-  // } = useDataWithPaginationAndSearch(oferte, "titluOferta");
+  const {
+    currentData,
+    setCurrentPage,
+    totalPages,
+    setSearchTerm,
+    currentPage,
+  } = useDataWithPaginationAndSearch(oferte, "titlu");
 
   return (
     <>
@@ -90,11 +90,11 @@ const index = ({ oferte }) => {
                 <div className="col-lg-8 col-xl-8">
                   <div className="candidate_revew_select style2 text-end mb30-991">
                     <ul className="mb0">
-                      {/* <li className="list-inline-item">
+                      <li className="list-inline-item">
                         <div className="candidate_revew_search_box course fn-520">
                           <SearchBox onSearch={setSearchTerm} />
                         </div>
-                      </li> */}
+                      </li>
                       {/* End li */}
 
                       {/* <li className="list-inline-item">
@@ -110,18 +110,18 @@ const index = ({ oferte }) => {
                   <div className="my_dashboard_review mb40">
                     <div className="property_table">
                       <div className="table-responsive mt0">
-                        <TableData oferte={oferte} />
+                        <TableData oferte={currentData} />
                       </div>
                       {/* End .table-responsive */}
-                      {/* 
+
                       <div className="mbp_pagination">
                         <Pagination
                           currentPage={currentPage}
                           totalPages={totalPages}
                           setCurrentPage={setCurrentPage}
                         />
-                      </div> */}
-                      {/* End .mbp_pagination */}
+                      </div>
+                      {/* {/* End .mbp_pagination */}
                     </div>
                     {/* End .property_table */}
                   </div>
