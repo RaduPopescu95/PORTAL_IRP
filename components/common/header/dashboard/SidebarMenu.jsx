@@ -80,12 +80,48 @@ const SidebarMenu = ({ partenerId }) => {
             </li>
             <li
               className={`treeview ${
+                isSinglePageActive("/adauga-interventie", pathname)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <Link href="/adauga-interventie">
+                <i className="flaticon-plus"></i>
+                <span>Adauga interventie</span>
+              </Link>
+            </li>
+            <li
+              className={`treeview ${
+                isSinglePageActive("/adauga-interventie", pathname)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <Link href="/adauga-solicitare-verbala">
+                <i className="flaticon-plus"></i>
+                <span>Adauga solicitare verbala</span>
+              </Link>
+            </li>
+            <li
+              className={`treeview ${
                 isSinglePageActive("/lista-BICP", pathname) ? "active" : ""
               }`}
             >
               <Link href="/lista-BICP">
                 <i className="flaticon-layers"></i>
                 <span>Lista BICP</span>
+              </Link>
+            </li>
+            <li
+              className={`treeview ${
+                isSinglePageActive("/lista-solicitari-verbale", pathname)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <Link href="/lista-solicitari-verbale">
+                <i className="flaticon-layers"></i>
+                <span>Lista solicitari verbale</span>
               </Link>
             </li>
             {manageAccount.map((item) => (

@@ -15,27 +15,27 @@ const AllStatistics = async () => {
       icon: "flaticon-profit",
       timer: "121",
     },
-    // {
-    //   id: 2,
-    //   blockStyle: "style2",
-    //   icon: "flaticon-high-five",
-    //   timer: "24",
-    //   name: "Parteneri",
-    // },
-    // {
-    //   id: 3,
-    //   blockStyle: "style3",
-    //   icon: "flaticon-chat",
-    //   timer: "12",
-    //   name: "Total Visitor Reviews",
-    // },
-    // {
-    //   id: 4,
-    //   blockStyle: "style4",
-    //   icon: "flaticon-heart",
-    //   timer: "18",
-    //   name: "Total Favorites",
-    // },
+    {
+      id: 2,
+      blockStyle: "style2",
+      icon: "flaticon-high-five",
+      timer: "24",
+      name: "Solcitari verbale",
+    },
+    {
+      id: 3,
+      blockStyle: "style3",
+      icon: "flaticon-chat",
+      timer: "12",
+      name: "Incendii",
+    },
+    {
+      id: 4,
+      blockStyle: "style4",
+      icon: "flaticon-heart",
+      timer: "18",
+      name: "Incendii vegetatie",
+    },
   ];
 
   return (
@@ -45,7 +45,7 @@ const AllStatistics = async () => {
           <div className={`ff_one ${item.blockStyle}`}>
             <div className="detais">
               <div className="timer">{numarOferte}</div>
-              <p>{numarOferte === 1 ? "BI/CP" : "BI/CP"}</p>
+              <p>{item.name}</p>
             </div>
             <div className="icon">
               <span className={item.icon}></span>
