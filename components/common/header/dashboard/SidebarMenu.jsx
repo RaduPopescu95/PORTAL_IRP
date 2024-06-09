@@ -87,12 +87,12 @@ const SidebarMenu = ({ partenerId }) => {
             >
               <Link href="/adauga-interventie">
                 <i className="flaticon-plus"></i>
-                <span>Adauga interventie</span>
+                <span>Adauga zi de interventie</span>
               </Link>
             </li>
             <li
               className={`treeview ${
-                isSinglePageActive("/adauga-interventie", pathname)
+                isSinglePageActive("/adauga-solicitare-verbala", pathname)
                   ? "active"
                   : ""
               }`}

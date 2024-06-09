@@ -31,6 +31,7 @@ const CreateList = ({ oferta }) => {
   const [recunoasteri, setRecunoasteri] = useState(0);
   const [exercitii, setExercitii] = useState(0);
   const [informare, setInformare] = useState(0);
+  const [nrMP, setNrMP] = useState(0);
   const [verificareATI, setVerificareATI] = useState(0);
   const [comunicat, setComunicat] = useState("");
   const [isLoading, setLoading] = useState(false);
@@ -95,6 +96,7 @@ const CreateList = ({ oferta }) => {
         data: dataCurenta,
         incendii: incendii,
         incendiiDeVegetatie: incendiiDeVegetatie,
+        nrMP,
         evenimentRutier: evenimentRutier,
         asistentaPersoane: asistentaPersoane,
         deblocareUsa: deblocareUsa,
@@ -157,7 +159,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="propertyTitle">Data</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="propertyTitle"
             value={dataCurenta}
@@ -171,7 +173,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="incendiiInput">Incendii</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="incendiiInput"
             value={incendii}
@@ -180,17 +182,29 @@ const CreateList = ({ oferta }) => {
         </div>
       </div>
 
-      <div className="col-lg-12">
+      <div className="col-lg-6">
         <div className="my_profile_setting_input form-group">
           <label htmlFor="incendiiDeVegetatieInput">
             Incendii de vegetație
           </label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="incendiiDeVegetatieInput"
             value={incendiiDeVegetatie}
             onChange={(e) => setIncendiiDeVegetatie(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="col-lg-6">
+        <div className="my_profile_setting_input form-group">
+          <label htmlFor="incendiiDeVegetatieInput">Nr metri patrati</label>
+          <input
+            type="number"
+            className="form-control"
+            id="incendiiDeVegetatieInput"
+            value={nrMP}
+            onChange={(e) => setNrMP(e.target.value)}
           />
         </div>
       </div>
@@ -199,7 +213,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="evenimentRutierInput">Eveniment rutier</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="evenimentRutierInput"
             value={evenimentRutier}
@@ -212,7 +226,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="asistentaPersoaneInput">Asistență persoane</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="asistentaPersoaneInput"
             value={asistentaPersoane}
@@ -225,7 +239,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="deblocareUsaInput">Deblocare ușă</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="deblocareUsaInput"
             value={deblocareUsa}
@@ -238,7 +252,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="salvareAnimalInput">Salvare animal</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="salvareAnimalInput"
             value={salvareAnimal}
@@ -251,7 +265,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="alteSUInput">Alte SU</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="alteSUInput"
             value={alteSU}
@@ -264,7 +278,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="pirotehnicInput">Pirotehnic</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="pirotehnicInput"
             value={pirotehnic}
@@ -277,7 +291,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="inundatiiInput">Inundații</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="inundatiiInput"
             value={inundatii}
@@ -290,7 +304,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="explozieInput">Explozie</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="explozieInput"
             value={explozie}
@@ -303,7 +317,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="alarmaFalsaInput">Alarma falsă</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="alarmaFalsaInput"
             value={alarmaFalsa}
@@ -316,7 +330,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="descarcerareInput">Descarcerare</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="descarcerareInput"
             value={descarcerare}
@@ -329,7 +343,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="smurdInput">SMURD</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="smurdInput"
             value={smurd}
@@ -342,7 +356,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="recunoasteriInput">Recunoașteri</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="recunoasteriInput"
             value={recunoasteri}
@@ -355,7 +369,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="exercitiiInput">Exerciții</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="exercitiiInput"
             value={exercitii}
@@ -368,7 +382,7 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="informareInput">Informare</label>
           <input
-            type="text"
+            type="number"
             className="form-control"
             id="informareInput"
             value={informare}
