@@ -77,7 +77,7 @@ const CreateList = ({ oferta }) => {
     let apiIndex = 0;
     let apiKey = apis[apiIndex].api;
     let urlKey = apis[apiIndex].url;
-    const nextNumar = parseInt(numar, 10) + 1; // Incrementați numărul
+
     try {
       console.log("Test...");
       setLoading(true);
@@ -99,7 +99,7 @@ const CreateList = ({ oferta }) => {
             tz: "Europe/Paris",
             dateFormat: "yyyy.MM.dd",
             data: {
-              numar: nextNumar,
+              numar: numar,
               data: dataCurenta,
               nume: selectedItem,
               titlu: titlu,
@@ -142,7 +142,7 @@ const CreateList = ({ oferta }) => {
       setEditLink(resultPdf.Link); // Presupunând că răspunsul JSON are un câmp 'editLink'
 
       setLoading(false);
-
+      const nextNumar = parseInt(numar, 10) + 1; // Incrementați numărul
       setNumar(nextNumar.toString()); // Actualizați starea
       const t = `${selectedItem} - ${titlu}`;
       const documentData = {
@@ -162,6 +162,7 @@ const CreateList = ({ oferta }) => {
         `${selectedItem}-${nextNumar}`,
         documentData
       );
+
       await setFirestoreItem("numere", "ultimulNumar", { numar: nextNumar }); // Salvați noul număr
       showAlert(`Documente create cu succes!`, "succes");
     } catch (error) {
