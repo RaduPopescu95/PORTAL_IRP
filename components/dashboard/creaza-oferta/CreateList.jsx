@@ -146,7 +146,7 @@ const CreateList = ({ oferta }) => {
       setNumar(nextNumar.toString()); // Actualizați starea
       const t = `${selectedItem} - ${titlu}`;
       const documentData = {
-        numar: nextNumar,
+        numar: numar,
         data: dataCurenta,
         nume: selectedItem,
         titlu: titlu,
