@@ -159,7 +159,7 @@ const CreateList = ({ oferta }) => {
       // Salvați documentul în Firestore în colecția "Comunicate"
       await setFirestoreItem(
         "Comunicate",
-        `${selectedItem}-${nextNumar}`,
+        `${selectedItem}-${numar}`,
         documentData
       );
 
