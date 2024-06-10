@@ -77,7 +77,7 @@ const CreateList = ({ oferta }) => {
     let apiIndex = 0;
     let apiKey = apis[apiIndex].api;
     let urlKey = apis[apiIndex].url;
-
+    const nextNumar = parseInt(numar, 10) + 1; // Incrementați numărul
     try {
       console.log("Test...");
       setLoading(true);
@@ -99,7 +99,7 @@ const CreateList = ({ oferta }) => {
             tz: "Europe/Paris",
             dateFormat: "yyyy.MM.dd",
             data: {
-              numar: numar,
+              numar: nextNumar,
               data: dataCurenta,
               nume: selectedItem,
               titlu: titlu,
@@ -143,7 +143,6 @@ const CreateList = ({ oferta }) => {
 
       setLoading(false);
 
-      const nextNumar = parseInt(numar, 10) + 1; // Incrementați numărul
       setNumar(nextNumar.toString()); // Actualizați starea
       const t = `${selectedItem} - ${titlu}`;
       const documentData = {
