@@ -11,43 +11,35 @@ import { usePathname, useRouter } from "next/navigation";
 import { handleLogout } from "@/utils/authUtils";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
+import { authentication } from "@/firebase";
 
 const SidebarMenu = ({ partenerId }) => {
   const { currentUser, userData, loading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
-  const myProperties = [
-    { id: 1, name: "General Elements", route: "/my-properties" },
-    { id: 2, name: "Advanced Elements", route: "/my-properties" },
-    { id: 3, name: "Editors", route: "/my-properties" },
-  ];
-  const reviews = [
-    { id: 1, name: "My Reviews", route: "/my-review" },
-    { id: 2, name: "Visitor Reviews", route: "/my-review" },
-  ];
   const manageAccount = [
-    // {
-    //   id: 1,
-    //   name: "My Package",
-    //   route: "/my-package",
-    //   icon: "flaticon-box",
-    // },
-    // {
-    //   id: 2,
-    //   name: "Profil",
-    //   route: "/profil-partener",
-    //   icon: "flaticon-user",
-    // },
     { id: 3, name: "Deconectare", route: "/signin", icon: "flaticon-logout" },
   ];
 
   useEffect(() => {
-    console.log(currentUser);
-    if (!currentUser) {
-      router.push("/signin");
-    }
-  }, [loading]);
+    // console.log(currentUser);
+    // if (!currentUser) {
+    //   router.push("/signin");
+    // }
+    const unsubscribe = authentication.onAuthStateChanged(async (user) => {
+      console.log("start use effect from auth CHECK", user);
+      if (!user) {
+        try {
+          router.push("/signin");
+        } catch (error) {
+          console.error("Failed to fetch user data:", error);
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, []);
 
   return (
     <>
@@ -100,6 +92,16 @@ const SidebarMenu = ({ partenerId }) => {
               <Link href="/adauga-solicitare-verbala">
                 <i className="flaticon-plus"></i>
                 <span>Adauga solicitare verbala</span>
+              </Link>
+            </li>
+            <li
+              className={`treeview ${
+                isSinglePageActive("/", pathname) ? "active" : ""
+              }`}
+            >
+              <Link href="/">
+                <i className="flaticon-layers"></i>
+                <span>Panou Principal</span>
               </Link>
             </li>
             <li

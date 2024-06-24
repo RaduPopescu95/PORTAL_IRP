@@ -1,3 +1,26 @@
+//PORTAL IRP
+export const getLastMonday = () => {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const lastMonday = new Date(today);
+  lastMonday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek + 5));
+  lastMonday.setHours(0, 0, 0, 0);
+  return lastMonday;
+};
+
+export const getNextMonday = (lastMonday) => {
+  const nextMonday = new Date(lastMonday);
+  nextMonday.setDate(lastMonday.getDate() + 7);
+  return nextMonday;
+};
+
+export const formatDate = (date) => {
+  const day = ("0" + date.getUTCDate()).slice(-2);
+  const month = ("0" + (date.getUTCMonth() + 1)).slice(-2); // lunile sunt indexate de la 0
+  const year = date.getUTCFullYear();
+  return `${day}-${month}-${year}`;
+};
+//PORTAL IRP
 export const toUrlSlug = (string) => {
   console.log("test tourlstring....", string);
   return string
