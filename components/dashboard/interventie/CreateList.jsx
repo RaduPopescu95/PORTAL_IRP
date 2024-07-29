@@ -159,14 +159,15 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="propertyTitle">Data</label>
           <input
-            type="text"
+            type="date"
             className="form-control"
             id="propertyTitle"
             value={dataCurenta}
-            readOnly
+            onChange={(e) => setDataCurenta(e.target.value)}
           />
         </div>
       </div>
+
       {/* End .col */}
 
       <div className="col-lg-12">

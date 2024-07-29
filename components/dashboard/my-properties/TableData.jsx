@@ -33,6 +33,15 @@ const TableData = ({ oferte }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const isMobile = useIsMobile();
 
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("Textul a fost copiat: " + text);
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
+
   const handleDeleteClick = (item) => {
     setSelectedItem(item); // Salvează ID-ul elementului selectat
     setShowModal(true); // Afișează modalul
@@ -92,7 +101,14 @@ const TableData = ({ oferte }) => {
   if (isMobile) {
     theadConent = ["Nume", "Actiune"];
   } else {
-    theadConent = ["Nume", "Titlu", "Numar", "Data", "Actiune"];
+    theadConent = [
+      "Nume",
+      "Titlu",
+      "Numar",
+      "Data",
+      "Actiune",
+      "Copiaza continut",
+    ];
   }
 
   let tbodyContent = oferte?.map((item) => (
@@ -128,6 +144,22 @@ const TableData = ({ oferte }) => {
             <a href={item.pdfLink}>PDF</a>
           </li>
 
+          {/* End li */}
+        </ul>
+      </td>
+      {/* End td */}
+      <td>
+        <ul className="">
+          <li title="Edit">
+            <button onClick={() => copyToClipboard(item.titlu)}>
+              Copiaza titlu
+            </button>
+          </li>
+          <li title="Edit">
+            <button onClick={() => copyToClipboard(item.comunicat)}>
+              Copiaza continut
+            </button>
+          </li>
           {/* End li */}
         </ul>
       </td>

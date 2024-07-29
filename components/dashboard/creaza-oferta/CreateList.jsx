@@ -73,7 +73,7 @@ const CreateList = ({ oferta }) => {
 
   const handleSend = async () => {
     const wordId = "12jLztiQvtEf46RKXZ1N3hCI-b_O4ko2hJ2xVZPkUYAk";
-    const pdfId = "133cptKf460XezNPl-Q54hjtIZ3dWCLdEIOcLoAZfEFs";
+    const pdfId = "1bgKC1FzCmjIJm4IWJo87XbVp-Up4r8aylO2Bf3_LF0E";
     let apiIndex = 0;
     let apiKey = apis[apiIndex].api;
     let urlKey = apis[apiIndex].url;
