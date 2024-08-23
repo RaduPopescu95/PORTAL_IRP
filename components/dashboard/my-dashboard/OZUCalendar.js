@@ -180,6 +180,15 @@ const OZUCalendar = () => {
     setCalendarDays(calendar);
   }, [fullYearCalendar, currentMonth, currentYear]);
 
+  let today = new Date(); // Get today's date
+  today.setDate(today.getDate() - 1); // Subtract one day
+  today = today.toISOString().split("T")[0]; // Convert to string format
+
+  const isToday = (date) => {
+    // date.setDate(date.getDate() - 1);
+    return date.toISOString().split("T")[0] === today;
+  };
+
   return (
     <>
       <div className="calendar-header">
@@ -201,7 +210,7 @@ const OZUCalendar = () => {
               isWorkingDay(date, customHolidays)
                 ? "working-day"
                 : "non-working-day"
-            }`}
+            } ${isToday(date) ? "today" : ""}`}
             onClick={() => toggleHoliday(date)}
           >
             <div className="date">{date.getDate()}</div>
@@ -257,6 +266,9 @@ const OZUCalendar = () => {
           text-align: center;
           font-weight: bold;
           cursor: text;
+        }
+        .today {
+          border: 2px solid darkblue; /* Dark blue border for today */
         }
       `}</style>
     </>
