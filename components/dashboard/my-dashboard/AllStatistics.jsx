@@ -4,6 +4,7 @@ import {
   getFirestoreCollectionLength,
   handleGetFirestore,
 } from "@/utils/firestoreUtils";
+import OZUCalendar from "./OZUCalendar";
 
 const AllStatistics = async () => {
   const comunicate = await handleGetFirestore("Comunicate");
@@ -320,7 +321,11 @@ const AllStatistics = async () => {
 
   return (
     <>
-      <div class="accordion" id="accordionExample">
+      <div>
+        {/* <h2 id="headingOne">Numar OZU Azi</h2> */}
+        <OZUCalendar /> {/* Afișăm componenta OZUCalendar */}
+      </div>
+      {/* <div class="accordion" id="accordionExample">
         <div class="accordion-item">
           <h2 class="accordion-header" id="headingOne">
             <button
@@ -436,7 +441,7 @@ const AllStatistics = async () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* {interventiiTreiLuni.map((item) => (
         <div className="col-sm-6 col-md-6 col-lg-6 col-xl-3" key={item.id}>
