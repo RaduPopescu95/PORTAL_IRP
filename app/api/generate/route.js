@@ -1,22 +1,23 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
 
-// Citește direct cheia din variabila de mediu
-const keyFileContent = JSON.parse(process.env.GOOGLE_CLOUD_KEY);
-
+// Creează autentificarea cu Google API folosind variabile de mediu
 let auth;
 try {
   console.log("Initializing auth...");
   auth = new google.auth.GoogleAuth({
-    credentials: keyFileContent,
+    credentials: {
+      client_email: process.env.GOOGLE_CLIENT_EMAIL, // Citește din variabila de mediu
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"), // Înlocuiește \\n cu newline
+    },
     scopes: [
       "https://www.googleapis.com/auth/drive",
       "https://www.googleapis.com/auth/documents",
     ],
   });
-  console.log("Auth initialized:", auth);
+  console.log("Auth initialized successfully");
 } catch (error) {
-  console.error("Error during authentication:", error);
+  console.error("Error during authentication:", error.message);
 }
 
 const drive = google.drive({ version: "v3", auth });
@@ -25,20 +26,22 @@ const docs = google.docs({ version: "v1", auth });
 // Funcția pentru a seta permisiunile documentului generat
 const setFilePermissions = async (fileId) => {
   try {
+    // Setează permisiunile pentru o adresă de email specifică
     await drive.permissions.create({
       fileId: fileId,
       requestBody: {
         role: "reader",
-        type: "user", // Setează permisiunile pentru oricine are link-ul
-        emailAddress: "irp.isudb@gmail.com",
+        type: "user",
+        emailAddress: "irp.isudb@gmail.com", // Setează adresa de email pentru permisiuni
       },
     });
 
+    // Setează permisiuni publice (oricine cu link-ul)
     await drive.permissions.create({
       fileId: fileId,
       requestBody: {
         role: "reader",
-        type: "anyone", // Acces pentru oricine are link-ul
+        type: "anyone", // Acces public
       },
     });
 
