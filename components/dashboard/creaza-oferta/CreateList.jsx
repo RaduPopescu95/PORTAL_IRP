@@ -253,7 +253,20 @@ const CreateList = ({ oferta }) => {
       {/* End .col */}
       <div className="col-lg-12">
         <div className="my_profile_setting_input form-group">
-          <label htmlFor="propertyTitle">Numar</label>
+          <label htmlFor="propertyTitle">Numar Comunicat</label>
+          <input
+            type="text"
+            className="form-control"
+            id="propertyTitle"
+            value={numarComunicat}
+            readOnly
+          />
+        </div>
+      </div>
+      {/* End .col */}
+      <div className="col-lg-12">
+        <div className="my_profile_setting_input form-group">
+          <label htmlFor="propertyTitle">Numar Inregistrare</label>
           <input
             type="text"
             className="form-control"
