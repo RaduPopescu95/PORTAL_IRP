@@ -19,6 +19,7 @@ const CreateList = ({ oferta }) => {
   const [isLoading, setLoading] = useState(false);
   const [value, setValue] = useState(null);
   const [numar, setNumar] = useState("");
+  const [numarComunicat, setNumarComunicat] = useState("");
   // const [pdfLink, setPdfLink] = useState("");
   // const [wordLink, setWordLink] = useState("");
   // const [editLink, setEditLink] = useState("");
@@ -74,6 +75,19 @@ const CreateList = ({ oferta }) => {
 
   const handleSendApi = async (templateId, type) => {
     try {
+      let firstTitlePart;
+      if (selectedItem === "Buletin Informativ") {
+        firstTitlePart = "BI";
+      } else if (selectedItem === "Comunicat de Presă") {
+        firstTitlePart = "CP";
+      } else if (selectedItem === "Declarație de presă") {
+        firstTitlePart = "Declarație";
+      } else if (selectedItem === "Conferință de presă") {
+        firstTitlePart = "Conferință";
+      } else {
+        firstTitlePart = selectedItem;
+      }
+      const t = `${firstTitlePart} - ${titlu}`;
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: {
@@ -124,9 +138,24 @@ const CreateList = ({ oferta }) => {
       setLoading(false);
       const nextNumar = parseInt(numar, 10) + 1; // Incrementați numărul
       setNumar(nextNumar.toString()); // Actualizați starea
-      const t = `${selectedItem} - ${titlu}`;
+      const nextNumarComunicat = parseInt(numarComunicat, 10) + 1; // Incrementați numărul
+      setNumarComunicat(nextNumarComunicat.toString()); // Actualizați starea
+      let firstTitlePart;
+      if (selectedItem === "Buletin Informativ") {
+        firstTitlePart = "BI";
+      } else if (selectedItem === "Comunicat de Presă") {
+        firstTitlePart = "CP";
+      } else if (selectedItem === "Declarație de presă") {
+        firstTitlePart = "Declarație";
+      } else if (selectedItem === "Conferință de presă") {
+        firstTitlePart = "Conferință";
+      } else {
+        firstTitlePart = selectedItem;
+      }
+      const t = `${numarComunicat} - ${firstTitlePart} - ${titlu}`;
       const documentData = {
         numar: numar,
+        numarComunicat: numarComunicat,
         data: dataCurenta,
         nume: selectedItem,
         titlu: titlu,
@@ -148,7 +177,9 @@ const CreateList = ({ oferta }) => {
       );
 
       await setFirestoreItem("numere", "ultimulNumar", { numar: nextNumar }); // Salvați noul număr
-      showAlert(`Documente create cu succes!`, "succes");
+      await setFirestoreItem("NumarComunicat", "ComunicatNumar", {
+        numarComunicat: nextNumarComunicat,
+      }); // Salvați noul număr      showAlert(`Documente create cu succes!`, "succes");
     } catch (error) {
       setLoading(false);
       showAlert(`Error at POST REQUEST! ${error.message}`, "error");
@@ -170,15 +201,30 @@ const CreateList = ({ oferta }) => {
     const fetchNumar = async () => {
       try {
         const storedNumar = await getFirestoreItem("numere", "ultimulNumar");
+        const storedNumarComunicat = await getFirestoreItem(
+          "NumarComunicat",
+          "ComunicatNumar"
+        );
         let nextNumar;
+        let nextNumarComuniicat;
         if (!storedNumar) {
           // Verificați dacă storedNumar este null
           nextNumar = 0; // Setează numarul la 0 dacă este prima dată
         } else {
           nextNumar = storedNumar.numar; // Altfel, incrementați numărul
         }
+        if (!storedNumarComunicat) {
+          // Verificați dacă storedNumarComunicat este null
+          nextNumarComuniicat = 0; // Setează numarul la 0 dacă este prima dată
+        } else {
+          nextNumarComuniicat = storedNumarComunicat.numar; // Altfel, incrementați numărul
+        }
         setNumar(nextNumar.toString()); // Actualizați starea
+        setNumarComunicat(nextNumarComuniicat.toString()); // Actualizați starea
         await setFirestoreItem("numere", "ultimulNumar", { numar: nextNumar }); // Salvați noul număr
+        await setFirestoreItem("NumarComunicat", "ComunicatNumar", {
+          numarComunicat: nextNumarComuniicat,
+        }); // Salvați noul număr
       } catch (e) {
         console.error("Eroare la citirea numărului din Firestore", e);
       }
