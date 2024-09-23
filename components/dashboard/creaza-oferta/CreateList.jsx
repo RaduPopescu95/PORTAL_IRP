@@ -217,7 +217,7 @@ const CreateList = ({ oferta }) => {
           // Verificați dacă storedNumarComunicat este null
           nextNumarComuniicat = 0; // Setează numarul la 0 dacă este prima dată
         } else {
-          nextNumarComuniicat = storedNumarComunicat.numar; // Altfel, incrementați numărul
+          nextNumarComuniicat = storedNumarComunicat.numarComunicat; // Altfel, incrementați numărul
         }
         setNumar(nextNumar.toString()); // Actualizați starea
         setNumarComunicat(nextNumarComuniicat.toString()); // Actualizați starea
