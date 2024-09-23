@@ -312,6 +312,10 @@ const CreateList = ({ oferta }) => {
               Conferință de presă
             </option>
             <option data-tokens="Invitație">Invitație</option>
+            <option data-tokens="Invitație">Interviu</option>
+            <option data-tokens="Invitație">Anunț</option>
+            <option data-tokens="Invitație">Eveniment de presă</option>
+            <option data-tokens="Invitație">Drept la replică</option>
           </select>
         </div>
       </div>
