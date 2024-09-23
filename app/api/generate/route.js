@@ -1,14 +1,24 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
 
-// Creează autentificarea cu Google API folosind variabile de mediu
+// Citește direct cheia din variabila de mediu
+
 let auth;
 try {
   console.log("Initializing auth...");
   auth = new google.auth.GoogleAuth({
     credentials: {
-      client_email: process.env.GOOGLE_CLIENT_EMAIL, // Citește din variabila de mediu
-      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"), // Înlocuiește \\n cu newline
+      type: process.env.GOOGLE_TYPE,
+      private_id: process.env.GOOGLE_PROJECT_ID, // Înlocuiește \\n cu newline
+      private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID, // Înlocuiește \\n cu newline
+      private_key: process.env.GOOGLE_PRIVATE_KEY, // Înlocuiește \\n cu newline
+      client_email: process.env.GOOGLE_CLIENT_EMAIL,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      auth_uri: process.env.GOOGLE_AUTH_URI,
+      token_uri: process.env.GOOGLE_TOKEN_URI,
+      auth_provider_x509_cert_url: process.env.GOOGLE_AUTH_PROVIDER_CERT_URL,
+      client_x509_cert_url: process.env.GOOGLE_CLIENT_CERT_URL,
+      universe_domain: process.env.GOOGLE_UNIVERSE_DOMAIN, // Înlocuiește \\n cu newline
     },
     scopes: [
       "https://www.googleapis.com/auth/drive",
@@ -26,22 +36,20 @@ const docs = google.docs({ version: "v1", auth });
 // Funcția pentru a seta permisiunile documentului generat
 const setFilePermissions = async (fileId) => {
   try {
-    // Setează permisiunile pentru o adresă de email specifică
     await drive.permissions.create({
       fileId: fileId,
       requestBody: {
         role: "reader",
-        type: "user",
-        emailAddress: "irp.isudb@gmail.com", // Setează adresa de email pentru permisiuni
+        type: "user", // Setează permisiunile pentru oricine are link-ul
+        emailAddress: "irp.isudb@gmail.com",
       },
     });
 
-    // Setează permisiuni publice (oricine cu link-ul)
     await drive.permissions.create({
       fileId: fileId,
       requestBody: {
         role: "reader",
-        type: "anyone", // Acces public
+        type: "anyone", // Acces pentru oricine are link-ul
       },
     });
 
