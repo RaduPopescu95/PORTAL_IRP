@@ -41,7 +41,7 @@ const TableData = ({ oferte, an }) => {
   };
 
   if (!oferte || oferte.length === 0) {
-    return <p>Nu există comunicate pentru anul {an}.</p>;
+    return <p>Nu există acreditari pentru anul {an}.</p>;
   }
 
   const theadContent = isMobile

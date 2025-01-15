@@ -33,6 +33,72 @@ const CreateList = ({ oferta }) => {
     setAlert({ message: "", type: "" });
   };
 
+  const [timeoutId, setTimeoutId] = useState(null);
+
+  // Caută datele jurnalistului în funcție de număr legitimație
+  const fetchJurnalistByLegitimatie = async (legitimatie) => {
+    if (!legitimatie) return;
+
+    try {
+      const jurnalist = await getFirestoreItem("Jurnalisti", legitimatie);
+      if (jurnalist) {
+        setNumeJurnalistAdresa(jurnalist.numeJurnalistAdresa);
+        setNumeJurnalistAcreditare(jurnalist.numeJurnalistAcreditare);
+        setEmail(jurnalist.email);
+        setNumeRedactie(jurnalist.redactie);
+        setAdresaRedactie(jurnalist.adresaRedactie);
+      } else {
+        console.log("Jurnalistul nu există în Firestore.");
+      }
+    } catch (error) {
+      console.error("Eroare la preluarea jurnalistului:", error.message);
+    }
+  };
+
+  // Caută adresa redacției în funcție de numele redacției
+  const fetchRedactieByName = async (redactie) => {
+    if (!redactie) return;
+
+    try {
+      const jurnalist = await getFirestoreItem("Jurnalisti", redactie);
+      if (jurnalist) {
+        setAdresaRedactie(jurnalist.adresa);
+      } else {
+        console.log("Redacția nu există în Firestore.");
+      }
+    } catch (error) {
+      console.error("Eroare la preluarea redacției:", error.message);
+    }
+  };
+
+  // Gestionare modificări pentru numarLegitimatie cu timeout
+  const handleLegitimatieChange = (e) => {
+    const value = e.target.value;
+    setNumarLegitimatie(value);
+
+    if (timeoutId) clearTimeout(timeoutId);
+
+    const newTimeoutId = setTimeout(() => {
+      fetchJurnalistByLegitimatie(value);
+    }, 1000); // Timeout de 1 secundă
+
+    setTimeoutId(newTimeoutId);
+  };
+
+  // Gestionare modificări pentru numeRedactie cu timeout
+  const handleRedactieChange = (e) => {
+    const value = e.target.value;
+    setNumeRedactie(value);
+
+    if (timeoutId) clearTimeout(timeoutId);
+
+    const newTimeoutId = setTimeout(() => {
+      fetchRedactieByName(value);
+    }, 1000); // Timeout de 1 secundă
+
+    setTimeoutId(newTimeoutId);
+  };
+
   const handleSend = async () => {
     const templateIdAdresaAcreditare =
       "1t8rI82DJ12OFTec3MnPd2I8LcNkW8Bu9Wgj1yX-c3nk";
@@ -65,6 +131,16 @@ const CreateList = ({ oferta }) => {
     ];
 
     try {
+      // Salvează jurnalistul în colecția Firestore
+      await setFirestoreItem("Jurnalisti", numarLegitimatie, {
+        numeJurnalistAcreditare,
+        numeJurnalistAdresa,
+        email,
+        numeRedactie,
+        adresaRedactie,
+      });
+
+      console.log("Jurnalist salvat/actualizat cu succes în Firestore.");
       console.log("Starting document generation...");
       console.log("Documents to be sent:", documents);
 
@@ -84,12 +160,22 @@ const CreateList = ({ oferta }) => {
         console.log("Documents generated successfully:", data.links);
         showAlert("Documente generate cu succes!", "success");
 
+        // Salvează documentele generate în Firestore
         await setFirestoreItem("Acreditari", `Acreditare-${numar}`, {
           numar,
           data: dataCurenta,
           links: data.links,
         });
+
         console.log("Document metadata saved in Firestore.");
+
+        // Actualizează ultimulNumarAcreditare cu numărul următor
+        const nextNumar = numar + 1; // Incrementare simplă
+        await setFirestoreItem("numere", "ultimulNumarAcreditare", {
+          numar: nextNumar,
+        });
+        console.log(`Updated ultimulNumarAcreditare to ${nextNumar}`);
+        setNumar(nextNumar); // Actualizează local numărul
       } else {
         console.error("Error from API:", data.error);
         throw new Error(data.error || "Unknown error");
@@ -220,7 +306,7 @@ const CreateList = ({ oferta }) => {
             className="form-control"
             id="propertyRedactie"
             value={numeRedactie}
-            onChange={(e) => setNumeRedactie(e.target.value)}
+            onChange={handleRedactieChange}
           />
         </div>
       </div>
@@ -290,7 +376,7 @@ const CreateList = ({ oferta }) => {
             className="form-control"
             id="propertyEmail"
             value={numarLegitimatie}
-            onChange={(e) => setNumarLegitimatie(e.target.value)}
+            onChange={handleLegitimatieChange}
           />
         </div>
       </div>
