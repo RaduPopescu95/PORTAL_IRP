@@ -34,8 +34,9 @@ const CreateList = ({ oferta }) => {
   };
 
   const handleSend = async () => {
-    const templateIdAdresaAcreditare = "1b_l4xlbd081O5Smxcxn8amG79v4hYYXr";
-    const templateIdAcreditare = "1TdjlM3CYvwljH47QnikR4G7hVmxVU8e1";
+    const templateIdAdresaAcreditare =
+      "1t8rI82DJ12OFTec3MnPd2I8LcNkW8Bu9Wgj1yX-c3nk";
+    const templateIdAcreditare = "1E5a3HYexg3pqvPVUWmY1ajMQDUwkwhCE_nYQ7zlFC0Q";
 
     const documents = [
       {
