@@ -62,46 +62,23 @@ const SidebarMenu = ({ partenerId }) => {
             </li> */}
             <li
               className={`treeview ${
-                isSinglePageActive("/creaza-BICP", pathname) ? "active" : ""
-              }`}
-            >
-              <Link href="/creaza-BICP">
-                <i className="flaticon-plus"></i>
-                <span>Creaza BICP</span>
-              </Link>
-            </li>
-            <li
-              className={`treeview ${
-                isSinglePageActive("/adauga-interventie", pathname)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <Link href="/adauga-interventie">
-                <i className="flaticon-plus"></i>
-                <span>Adauga zi de interventie</span>
-              </Link>
-            </li>
-            <li
-              className={`treeview ${
-                isSinglePageActive("/adauga-solicitare-verbala", pathname)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <Link href="/adauga-solicitare-verbala">
-                <i className="flaticon-plus"></i>
-                <span>Adauga solicitare verbala</span>
-              </Link>
-            </li>
-            <li
-              className={`treeview ${
                 isSinglePageActive("/", pathname) ? "active" : ""
               }`}
             >
               <Link href="/">
                 <i className="flaticon-layers"></i>
                 <span>Panou Principal</span>
+              </Link>
+            </li>
+
+            <li
+              className={`treeview ${
+                isSinglePageActive("/creaza-BICP", pathname) ? "active" : ""
+              }`}
+            >
+              <Link href="/creaza-BICP">
+                <i className="flaticon-plus"></i>
+                <span>Creaza BICP</span>
               </Link>
             </li>
             <li
@@ -114,6 +91,53 @@ const SidebarMenu = ({ partenerId }) => {
                 <span>Lista BICP</span>
               </Link>
             </li>
+            <li
+              className={`treeview ${
+                isSinglePageActive("/adauga-interventie", pathname)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <Link href="/creaza-acreditare">
+                <i className="flaticon-plus"></i>
+                <span>Creaza acreditare</span>
+              </Link>
+            </li>
+            <li
+              className={`treeview ${
+                isSinglePageActive("/lista-BICP", pathname) ? "active" : ""
+              }`}
+            >
+              <Link href="/lista-acreditari">
+                <i className="flaticon-layers"></i>
+                <span>Lista Acreditari</span>
+              </Link>
+            </li>
+            {/* <li
+              className={`treeview ${
+                isSinglePageActive("/adauga-interventie", pathname)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <Link href="/adauga-interventie">
+                <i className="flaticon-plus"></i>
+                <span>Adauga zi de interventie</span>
+              </Link>
+            </li> */}
+            <li
+              className={`treeview ${
+                isSinglePageActive("/adauga-solicitare-verbala", pathname)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <Link href="/adauga-solicitare-verbala">
+                <i className="flaticon-plus"></i>
+                <span>Adauga solicitare verbala</span>
+              </Link>
+            </li>
+
             <li
               className={`treeview ${
                 isSinglePageActive("/lista-solicitari-verbale", pathname)

@@ -25,7 +25,7 @@ const styles = {
   },
 };
 
-const TableData = ({ oferte }) => {
+const TableData = ({ oferte, an }) => {
   console.log("TableData oferte:", oferte); // Check what is received exactly
 
   const [showModal, setShowModal] = useState(false);

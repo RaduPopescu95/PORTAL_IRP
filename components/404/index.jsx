@@ -9,13 +9,13 @@ const index = () => {
   return (
     <>
       {/* <!-- Main Header Nav --> */}
-      <Header />
+      {/* <Header /> */}
 
       {/* <!--  Mobile Menu --> */}
-      <MobileMenu />
+      {/* <MobileMenu /> */}
 
       {/* <!-- Modal --> */}
-      <PopupSignInUp />
+      {/* <PopupSignInUp /> */}
 
       {/* <!-- Our Error Page --> */}
       <section className="our-error bgc-f7">
