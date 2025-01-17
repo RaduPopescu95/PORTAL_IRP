@@ -170,7 +170,7 @@ const CreateList = ({ oferta }) => {
         console.log("Document metadata saved in Firestore.");
 
         // Actualizează ultimulNumarAcreditare cu numărul următor
-        const nextNumar = numar + 1; // Incrementare simplă
+        const nextNumar = parseInt(numar, 10) + 1;
         await setFirestoreItem("numere", "ultimulNumarAcreditare", {
           numar: nextNumar,
         });
