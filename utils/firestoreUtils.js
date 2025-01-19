@@ -26,6 +26,31 @@ export const userLocation = `Users/${
   auth.currentUser ? auth.currentUser.uid : ""
 }`; // Calea către document
 
+export const getFirestoreItemsByCondition = async (
+  collectionName,
+  field,
+  value
+) => {
+  try {
+    const q = query(collection(db, collectionName), where(field, "==", value)); // Query direct în Firestore
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const results = [];
+      querySnapshot.forEach((doc) => {
+        results.push({ id: doc.id, ...doc.data() }); // Adaugă documentul și ID-ul său
+      });
+      return results;
+    } else {
+      console.log("No matching documents found.");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error querying Firestore:", error.message);
+    return [];
+  }
+};
+
 export const getFirestoreItem = async (collection, docId) => {
   const docRef = doc(db, collection, docId);
   const docSnap = await getDoc(docRef);

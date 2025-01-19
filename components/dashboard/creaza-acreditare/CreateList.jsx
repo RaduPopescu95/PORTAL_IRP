@@ -72,17 +72,46 @@ const CreateList = ({ oferta }) => {
   };
 
   // Gestionare modificări pentru numarLegitimatie cu timeout
-  const handleLegitimatieChange = (e) => {
+  // Adaugă o stare pentru sugestii
+  const [suggestions, setSuggestions] = useState([]);
+
+  const handleLegitimatieChange = async (e) => {
     const value = e.target.value;
     setNumarLegitimatie(value);
 
     if (timeoutId) clearTimeout(timeoutId);
 
-    const newTimeoutId = setTimeout(() => {
-      fetchJurnalistByLegitimatie(value);
-    }, 1000); // Timeout de 1 secundă
+    const newTimeoutId = setTimeout(async () => {
+      if (value) {
+        try {
+          const jurnalist = await getFirestoreItem("Jurnalisti", value);
+
+          if (jurnalist) {
+            // Actualizează sugestiile cu valorile relevante
+            setSuggestions([jurnalist.numeJurnalistAcreditare]);
+            setNumeJurnalistAdresa(jurnalist.numeJurnalistAdresa || "");
+            setEmail(jurnalist.email || "");
+            setNumeRedactie(jurnalist.redactie || "");
+            setAdresaRedactie(jurnalist.adresaRedactie || "");
+          } else {
+            setSuggestions([]); // Golim sugestiile dacă nu găsim rezultate
+            console.log("Jurnalistul nu există în Firestore.");
+          }
+        } catch (error) {
+          console.error("Eroare la preluarea jurnalistului:", error.message);
+        }
+      } else {
+        setSuggestions([]); // Golim sugestiile dacă input-ul este gol
+      }
+    }, 1000);
 
     setTimeoutId(newTimeoutId);
+  };
+
+  // Funcție pentru selectarea unei sugestii
+  const handleSuggestionSelect = (suggestion) => {
+    setNumeJurnalistAcreditare(suggestion);
+    setSuggestions([]); // Ascunde dropdown-ul după selectare
   };
 
   // Gestionare modificări pentru numeRedactie cu timeout
@@ -374,12 +403,27 @@ const CreateList = ({ oferta }) => {
           <input
             type="text"
             className="form-control"
-            id="propertyEmail"
+            id="propertyLegitimatie"
             value={numarLegitimatie}
-            onChange={handleLegitimatieChange}
+            onChange={(e) => setNumarLegitimatie(e.target.value)}
           />
+          {suggestions.length > 0 && (
+            <ul className="dropdown-menu show">
+              {suggestions.map((suggestion, index) => (
+                <li
+                  key={index}
+                  className="dropdown-item"
+                  onClick={() => handleSuggestionSelect(suggestion)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {suggestion}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
+
       {/* End .col */}
 
       <div className="col-xl-12">
