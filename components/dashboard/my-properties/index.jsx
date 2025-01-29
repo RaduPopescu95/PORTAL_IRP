@@ -26,7 +26,6 @@ import {
 } from "firebase/firestore";
 import { useCollectionPagination } from "@/hooks/useCollectionPagination";
 import { useDataWithPaginationAndSearch } from "@/hooks/useDataWithPaginationAndSearch";
-import { useDataWithPaginationAndSearchAcreditari } from "@/hooks/useDataWithPaginationAndSearchAcreditari";
 
 const index = ({ oferte, an }) => {
   console.log("oferte....", oferte);
@@ -36,7 +35,7 @@ const index = ({ oferte, an }) => {
     totalPages,
     setSearchTerm,
     currentPage,
-  } = useDataWithPaginationAndSearchAcreditari(oferte, "titlu");
+  } = useDataWithPaginationAndSearch(oferte, "titlu");
 
   return (
     <>

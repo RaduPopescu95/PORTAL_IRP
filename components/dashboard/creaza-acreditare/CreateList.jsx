@@ -132,6 +132,8 @@ const CreateList = ({ oferta }) => {
     const templateIdAdresaAcreditare =
       "1t8rI82DJ12OFTec3MnPd2I8LcNkW8Bu9Wgj1yX-c3nk";
     const templateIdAcreditare = "1E5a3HYexg3pqvPVUWmY1ajMQDUwkwhCE_nYQ7zlFC0Q";
+    const templateIdAcreditarePDF =
+      "1z5rCo8JiSY7f7atLX8YlHgXi7TQVua8pM5pgQM9DUAg";
 
     const documents = [
       {
@@ -156,6 +158,17 @@ const CreateList = ({ oferta }) => {
           numeRedactie: numeRedactie,
         },
         newTitle: `Acreditare ${numeJurnalistAcreditare}`,
+      },
+      {
+        templateId: templateIdAcreditarePDF, // DOAR acest document va avea și PDF
+        variables: {
+          numar,
+          data: dataCurenta,
+          numeAcreditare: numeJurnalistAcreditare,
+          numarLegitimatie: numarLegitimatie,
+          numeRedactie: numeRedactie,
+        },
+        newTitle: `Acreditare PDF ${numeJurnalistAcreditare}`,
       },
     ];
 
@@ -186,14 +199,22 @@ const CreateList = ({ oferta }) => {
       console.log("Response data:", data);
 
       if (response.ok) {
-        console.log("Documents generated successfully:", data.links);
+        data.links.forEach((doc) => {
+          console.log(
+            `Generated links for ${doc.title}: Word - ${doc.wordLink}, PDF - ${doc.pdfLink}`
+          );
+        });
         showAlert("Documente generate cu succes!", "success");
 
         // Salvează documentele generate în Firestore
         await setFirestoreItem("Acreditari", `Acreditare-${numar}`, {
           numar,
           data: dataCurenta,
-          links: data.links,
+          links: data.links.map((doc) => ({
+            title: doc.title,
+            wordLink: doc.wordLink,
+            ...(doc.pdfLink && { pdfLink: doc.pdfLink }), // Adaugă doar dacă există
+          })),
         });
 
         console.log("Document metadata saved in Firestore.");

@@ -100,35 +100,69 @@ const setFilePermissions = async (fileId) => {
   }
 };
 
+// export async function POST(req) {
+//   console.log("Processing POST request to generate documents...");
+//   try {
+//     const { documents } = await req.json();
+//     console.log("Documents received for processing:", documents);
+
+//     const generatedLinks = await Promise.all(
+//       documents.map(async ({ templateId, variables, newTitle }) => {
+//         console.log(
+//           `Processing document with templateId: ${templateId}, newTitle: ${newTitle}`
+//         );
+//         const documentId = await createDocumentCopy(templateId, newTitle);
+//         await setFilePermissions(documentId);
+//         await replaceVariables(documentId, variables);
+
+//         const wordLink = `https://docs.google.com/document/d/${documentId}/export?format=docx`;
+//         console.log(`Generated document links for ${newTitle}:`, { wordLink });
+
+//         return {
+//           title: newTitle,
+//           wordLink,
+//         };
+//       })
+//     );
+
+//     console.log("All documents generated successfully. Returning links.");
+//     return NextResponse.json({ links: generatedLinks });
+//   } catch (error) {
+//     console.error("Failed to generate documents:", error.message);
+//     return NextResponse.json(
+//       { error: "Failed to generate documents: " + error.message },
+//       { status: 500 }
+//     );
+//   }
+// }
+
 export async function POST(req) {
-  console.log("Processing POST request to generate documents...");
   try {
     const { documents } = await req.json();
-    console.log("Documents received for processing:", documents);
 
     const generatedLinks = await Promise.all(
       documents.map(async ({ templateId, variables, newTitle }) => {
-        console.log(
-          `Processing document with templateId: ${templateId}, newTitle: ${newTitle}`
-        );
         const documentId = await createDocumentCopy(templateId, newTitle);
         await setFilePermissions(documentId);
         await replaceVariables(documentId, variables);
 
         const wordLink = `https://docs.google.com/document/d/${documentId}/export?format=docx`;
-        console.log(`Generated document links for ${newTitle}:`, { wordLink });
+
+        let pdfLink = null;
+        if (templateId === "1z5rCo8JiSY7f7atLX8YlHgXi7TQVua8pM5pgQM9DUAg") {
+          pdfLink = `https://docs.google.com/document/d/${documentId}/export?format=pdf`;
+        }
 
         return {
           title: newTitle,
           wordLink,
+          ...(pdfLink && { pdfLink }), // Adaugă doar dacă există
         };
       })
     );
 
-    console.log("All documents generated successfully. Returning links.");
     return NextResponse.json({ links: generatedLinks });
   } catch (error) {
-    console.error("Failed to generate documents:", error.message);
     return NextResponse.json(
       { error: "Failed to generate documents: " + error.message },
       { status: 500 }
