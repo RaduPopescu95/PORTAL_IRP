@@ -16,7 +16,7 @@ const CreateList = ({ oferta }) => {
   const [isLoading, setLoading] = useState(false);
   const [numar, setNumar] = useState("");
 
-  const [numeRedactie, setNumeRedactie] = useState("");
+  const [numeRedactie, setNumeRedactie] = useState("REDACȚIA ");
   const [adresaRedactie, setAdresaRedactie] = useState("");
   const [numeJurnalistAdresa, setNumeJurnalistAdresa] = useState("");
   const [numeJurnalistAcreditare, setNumeJurnalistAcreditare] = useState("");
