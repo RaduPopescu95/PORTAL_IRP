@@ -17,8 +17,8 @@ import { coordonateRacari } from "@/data/racari";
 import { useRouter } from "next/navigation";
 
 const containerStyle = {
-  width: "100%",
-  height: "100%",
+  width: "100vw",
+  height: "100vh",
 };
 
 const MyMapView = ({
@@ -151,8 +151,8 @@ const router = useRouter()
     );
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      <GoogleMap
+    <div style={{ position: "relative", width: "100vw", height: "100vh" }}>
+            <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
         zoom={Math.round(Math.log2(360 / region.latitudeDelta))}
@@ -162,6 +162,7 @@ const router = useRouter()
         options={{
           streetViewControl: false,
           mapTypeControl: false,
+          gestureHandling: "greedy",
         }}
       >
         {/* Dacă filtrul pentru raioane este activ, afișează poligoanele */}

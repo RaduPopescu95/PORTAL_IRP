@@ -100,7 +100,7 @@ export default function MapContainer() {
 
   // Stiluri inline pentru containere
   const containerStyle = {
-    width: "100%",
+    width: "100vw",
     height: "100vh",
     position: "relative",
   };
