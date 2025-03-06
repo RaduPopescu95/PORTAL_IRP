@@ -10,10 +10,10 @@ const index = () => {
   return (
     <>
       {/* <!-- Main Header Nav --> */}
-      <Header />
+      {/* <Header /> */}
 
       {/* <!--  Mobile Menu --> */}
-      <MobileMenu />
+      {/* <MobileMenu /> */}
 
       <div className="dashboard_sidebar_menu">
         <div

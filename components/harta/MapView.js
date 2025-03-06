@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { GoogleMap, useJsApiLoader, Polygon } from "@react-google-maps/api";
-import { MdFilterList, MdMap, MdSatellite } from "react-icons/md";
+import { MdFilterList, MdMap, MdOutlineHome, MdSatellite } from "react-icons/md";
 
 // Importă coordonatele din folderul de date
 import { gaestiCoordinates } from "@/data/gaesti";
@@ -14,6 +14,7 @@ import { coordonateVoinesti } from "@/data/voinesti";
 import { coordonateCornesti } from "@/data/cornesti";
 import { coordonateVisina } from "@/data/visina";
 import { coordonateRacari } from "@/data/racari";
+import { useRouter } from "next/navigation";
 
 const containerStyle = {
   width: "100%",
@@ -32,7 +33,7 @@ const MyMapView = ({
 }) => {
   const [mapType, setMapType] = useState("standard");
   const [mapInstance, setMapInstance] = useState(null);
-
+const router = useRouter()
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyAX3rTsopgsc4EvDoA0yT_3nXes6sD8uM0", // Înlocuiește cu cheia ta
   });
@@ -224,56 +225,80 @@ const MyMapView = ({
       </div>
 
       {/* Butonul pentru deschiderea filtrelor */}
-      <div
+ 
+
+      <button
+      onClick={() => router.push("/panou-principal")}
         style={{
           position: "absolute",
-          bottom: "10px",
+          bottom: "25%",
           left: "10px",
-          backgroundColor: "#fff",
-          borderRadius: "50%",
+          padding: "12px",
+          backgroundColor: "#ffffff", // Fundal alb
+          border: "none",
+          borderRadius: "50%", // Formă circulară
+          cursor: "pointer",
+          zIndex: 1000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
         }}
       >
-        <button
-          onClick={() => setVisible(!visible)}
-          style={{
-            border: "none",
-            background: "none",
-            padding: "10px",
-            cursor: "pointer",
-          }}
-        >
-          <MdFilterList size={30} />
-        </button>
-      </div>
+       <MdOutlineHome size={30} />
+      </button>
+
+      {/* Butonul pentru deschiderea filtrelor */}
+ 
+
+      <button
+        onClick={() => setVisible(!visible)}
+        style={{
+          position: "absolute",
+          bottom: "15%",
+          left: "10px",
+          padding: "12px",
+          backgroundColor: "#ffffff", // Fundal alb
+          border: "none",
+          borderRadius: "50%", // Formă circulară
+          cursor: "pointer",
+          zIndex: 1000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+        }}
+      >
+  <MdFilterList size={30} />
+      </button>
 
       {/* Butonul pentru schimbarea tipului de hartă */}
-      <div
+
+
+               <button
+      onClick={toggleMapType}
         style={{
           position: "absolute",
-          bottom: "80px",
+          bottom: "5%",
           left: "10px",
-          backgroundColor: "#fff",
-          borderRadius: "50%",
+          padding: "12px",
+          backgroundColor: "#ffffff", // Fundal alb
+          border: "none",
+          borderRadius: "50%", // Formă circulară
+          cursor: "pointer",
+          zIndex: 1000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
         }}
       >
-        <button
-          onClick={toggleMapType}
-          style={{
-            border: "none",
-            background: "none",
-            padding: "10px",
-            cursor: "pointer",
-          }}
-        >
-          {mapType === "standard" ? (
+ {mapType === "standard" ? (
             <MdSatellite size={30} color="#0000ff" />
           ) : (
             <MdMap size={30} color="#0000ff" />
           )}
-        </button>
-      </div>
+      </button>
     </div>
   );
 };

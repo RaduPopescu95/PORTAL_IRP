@@ -2,6 +2,7 @@ import Wrapper from "@/components/layout/Wrapper";
 import HomeMain from "./(homes)/home-4/page";
 import PanouPartener from "./(admin-irp)/panou-principal/page";
 import { AuthProvider } from "@/context/AuthContext";
+import MapContainer from "./(admin-irp)/harta/page";
 
 // export const metadata = {
 //   title: "ExclusivMD - Oferte Exclusive pentru cadre medicale",
@@ -12,7 +13,8 @@ import { AuthProvider } from "@/context/AuthContext";
 export default function Home() {
   return (
     <Wrapper>
-      <PanouPartener />
+      {/* <PanouPartener /> */}
+      <MapContainer/>
     </Wrapper>
   );
 }
