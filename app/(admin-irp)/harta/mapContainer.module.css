@@ -1,0 +1,91 @@
+.cardContainer {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    margin-left: 10px;
+    margin-right: 10px;
+    background-color: white;
+    border-radius: 20px;
+    /* elevation: 5 în React Native se traduce aproximativ printr-o umbră */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  .calloutContainer {
+    background-color: white;
+    padding: 8px;
+    border-radius: 8px;
+    width: 200px;
+    height: 200px;
+    position: absolute;
+  }
+  
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* ocupă toată înălțimea containerului */
+  }
+  
+  .locationButton {
+    position: absolute;
+    bottom: -40px;
+    right: -20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: white;
+    border-radius: 5px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  .locationText {
+    margin-left: 8px;
+    font-size: 16px;
+    color: black;
+  }
+  
+  .textContainer {
+    position: absolute;
+    bottom: 16px;
+    left: 20%;
+    width: 55%;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    padding: 8px;
+    flex-direction: row;
+    z-index: 1;
+  }
+  
+  .map {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 5px;
+    left: 20px;
+    right: 40px;
+    padding: 10px;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .image {
+    width: 50px;
+    height: 50px;
+    z-index: 10;
+  }
+  

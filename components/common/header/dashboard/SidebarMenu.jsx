@@ -65,6 +65,16 @@ const SidebarMenu = ({ partenerId }) => {
                 isSinglePageActive("/", pathname) ? "active" : ""
               }`}
             >
+              <Link href="/harta">
+                <i className="flaticon-maps-and-flags"></i>
+                <span>Harta</span>
+              </Link>
+            </li>
+            <li
+              className={`treeview ${
+                isSinglePageActive("/", pathname) ? "active" : ""
+              }`}
+            >
               <Link href="/">
                 <i className="flaticon-layers"></i>
                 <span>Panou Principal</span>
