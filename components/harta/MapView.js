@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { GoogleMap, useJsApiLoader, Polygon } from "@react-google-maps/api";
-import { MdFilterList, MdMap, MdOutlineHome, MdSatellite } from "react-icons/md";
+import { MdFilterList, MdFireHydrantAlt, MdFullscreen, MdMap, MdOutlineHome, MdSatellite } from "react-icons/md";
 
 // Importă coordonatele din folderul de date
 import { gaestiCoordinates } from "@/data/gaesti";
@@ -30,6 +30,8 @@ const MyMapView = ({
   zoomLevel,
   children,
   filters,
+  goToNearestHydrant,
+  userLocation
 }) => {
   const [mapType, setMapType] = useState("standard");
   const [mapInstance, setMapInstance] = useState(null);
@@ -136,7 +138,15 @@ const router = useRouter()
     strokeWeight: 2,
   };
   
-
+  function toggleFullscreen() {
+    const mapDiv = document.getElementById("mapContainer");
+    if (!document.fullscreenElement) {
+      mapDiv.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }
+  
   if (loadError)
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
@@ -151,7 +161,7 @@ const router = useRouter()
     );
 
   return (
-    <div style={{ position: "relative", width: "100vw", height: "100vh" }}>
+    <div id="mapContainer"  style={{ position: "relative", width: "100vw", height: "100vh" }}>
             <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
@@ -163,6 +173,7 @@ const router = useRouter()
           streetViewControl: false,
           mapTypeControl: false,
           gestureHandling: "greedy",
+          fullscreenControl: false,
         }}
       >
         {/* Dacă filtrul pentru raioane este activ, afișează poligoanele */}
@@ -229,10 +240,33 @@ const router = useRouter()
  
 
       <button
+     onClick={toggleFullscreen}
+        style={{
+          position: "absolute",
+          bottom: "90%",
+          left: "10px",
+          padding: "12px",
+          backgroundColor: "#ffffff", // Fundal alb
+          border: "none",
+          borderRadius: "50%", // Formă circulară
+          cursor: "pointer",
+          zIndex: 1000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+        }}
+      >
+       <MdFullscreen size={30} />
+      </button>
+      {/* Butonul pentru deschiderea filtrelor */}
+ 
+
+      <button
       onClick={() => router.push("/panou-principal")}
         style={{
           position: "absolute",
-          bottom: "25%",
+          bottom: "80%",
           left: "10px",
           padding: "12px",
           backgroundColor: "#ffffff", // Fundal alb
@@ -256,7 +290,7 @@ const router = useRouter()
         onClick={() => setVisible(!visible)}
         style={{
           position: "absolute",
-          bottom: "15%",
+          bottom: "70%",
           left: "10px",
           padding: "12px",
           backgroundColor: "#ffffff", // Fundal alb
@@ -280,7 +314,7 @@ const router = useRouter()
       onClick={toggleMapType}
         style={{
           position: "absolute",
-          bottom: "5%",
+          bottom: "60%",
           left: "10px",
           padding: "12px",
           backgroundColor: "#ffffff", // Fundal alb
@@ -300,6 +334,31 @@ const router = useRouter()
             <MdMap size={30} color="#0000ff" />
           )}
       </button>
+
+
+              {/* Buton pentru filtrul de hidranți (ex: cel mai apropiat) */}
+              {region && userLocation && (
+         <button
+  onClick={goToNearestHydrant}
+  style={{
+    position: "absolute",
+    bottom: "50%",
+    left: "10px",
+    padding: "12px",
+    backgroundColor: "#4caf50", // Fundal verde
+    border: "none",
+    borderRadius: "50%", // Formă circulară
+    cursor: "pointer",
+    zIndex: 1000,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+  }}
+>
+  <MdFireHydrantAlt size={24} color="white" />
+</button>
+)}
     </div>
   );
 };

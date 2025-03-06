@@ -454,7 +454,10 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
           setVisible={setVisible}
           visible={visible}
           zoomLevel={zoomLevels}
+          goToNearestHydrant={goToNearestHydrant}
           filters={filters}  // <-- Asigură-te că filtrele sunt transmise aici
+       
+          userLocation={userLocation}
         >
           {filters.raioane && (
             <>
@@ -629,29 +632,7 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
         onConfirm={handleGetDirections}
       />
 
-         {/* Buton pentru filtrul de hidranți (ex: cel mai apropiat) */}
-         {region && userLocation && (
-         <button
-  onClick={goToNearestHydrant}
-  style={{
-    position: "absolute",
-    top: "10%",
-    right: "10px",
-    padding: "12px",
-    backgroundColor: "#4caf50", // Fundal verde
-    border: "none",
-    borderRadius: "50%", // Formă circulară
-    cursor: "pointer",
-    zIndex: 1000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-  }}
->
-  <MdFireHydrantAlt size={24} color="white" />
-</button>
-)}
+ 
 
     </div>
   );
