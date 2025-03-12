@@ -115,7 +115,7 @@ const SidebarMenu = ({ partenerId }) => {
             )}
 
             {/* Link-uri afișate exclusiv pentru powerAdmin */}
-            {isPowerAdmin && (
+            {currentUser.uid === "KWrwl5GFFjc5700GNgze5ki6Jsp1" && (
               <>
                 <li
                   className={`treeview ${
