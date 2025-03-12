@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { GoogleMap, useJsApiLoader, Polygon } from "@react-google-maps/api";
-import { MdFilterList, MdFireHydrantAlt, MdFullscreen, MdMap, MdOutlineHome, MdSatellite } from "react-icons/md";
+import { GoogleMap, useJsApiLoader, Polygon, OverlayView } from "@react-google-maps/api";
+import { MdFilterList, MdFireHydrantAlt, MdFullscreen, MdMap, MdOutlineHome, MdOutlineLogout, MdSatellite, MdMyLocation } from "react-icons/md";
 
 // Importă coordonatele din folderul de date
 import { gaestiCoordinates } from "@/data/gaesti";
@@ -15,6 +15,52 @@ import { coordonateCornesti } from "@/data/cornesti";
 import { coordonateVisina } from "@/data/visina";
 import { coordonateRacari } from "@/data/racari";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { handleLogout } from "@/utils/authUtils";
+import MultiSelectDialog from "./MultiSelectDialog";
+import NavigationDialog from "./NavigationDialog";
+
+// Componenta PulsingMarker adăugată (nu am eliminat alt cod sau comentarii)
+const PulsingMarker = ({ position, onClick }) => {
+  const markerStyle = {
+    position: "absolute",
+    width: "20px",
+    height: "20px",
+    backgroundColor: "#0047AB",
+    borderRadius: "50%",
+    transform: "translate(-50%, -50%)",
+    cursor: "pointer",
+  };
+
+  return (
+    <OverlayView position={position} mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}>
+      <div onClick={onClick} style={markerStyle} className="pulse-marker" />
+    </OverlayView>
+  );
+};
+
+/* 
+  Adaugă următoarele stiluri CSS în fișierul tău global sau modulul CSS:
+  
+  .pulse-marker {
+    animation: pulsate 1.5s ease-out infinite;
+  }
+  
+  @keyframes pulsate {
+    0% {
+      transform: translate(-50%, -50%) scale(0.9);
+      opacity: 1;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.5);
+      opacity: 0.5;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(0.9);
+      opacity: 1;
+    }
+  }
+*/
 
 const containerStyle = {
   width: "100vw",
@@ -31,14 +77,20 @@ const MyMapView = ({
   children,
   filters,
   goToNearestHydrant,
-  userLocation
+  userLocation,
+  open,
+  marker,
+  onClose,
+  onConfirm,
+  handleFilters
 }) => {
   const [mapType, setMapType] = useState("standard");
   const [mapInstance, setMapInstance] = useState(null);
-const router = useRouter()
+  const router = useRouter();
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyAX3rTsopgsc4EvDoA0yT_3nXes6sD8uM0", // Înlocuiește cu cheia ta
   });
+  const { currentUser, userData, loading, isAdmin, isPowerAdmin } = useAuth();
 
   const toggleMapType = () =>
     setMapType((current) => (current === "standard" ? "satellite" : "standard"));
@@ -63,7 +115,6 @@ const router = useRouter()
   // Funcție pentru a transforma coordonatele din { latitude, longitude } în { lat, lng }
   const transformCoordinates = (coords) =>
     coords.map(({ latitude, longitude }) => ({ lat: latitude, lng: longitude }));
-  
 
   // Opțiuni pentru poligoane pentru fiecare raion
   const gaestiPolygonOptions = {
@@ -137,7 +188,23 @@ const router = useRouter()
     strokeOpacity: 1,
     strokeWeight: 2,
   };
-  
+
+  // Dacă se face click pe hartă, recalculează și re-centrează
+  const onMapClick = (e) => {
+    const newLat = e.latLng.lat();
+    const newLng = e.latLng.lng();
+    onRegionChangeComplete({
+      latitude: newLat,
+      longitude: newLng,
+      latitudeDelta: region.latitudeDelta,
+      longitudeDelta: region.longitudeDelta,
+    });
+    if (mapInstance) {
+      mapInstance.panTo({ lat: newLat, lng: newLng });
+    }
+    // handleMapPress && handleMapPress({ lat: newLat, lng: newLng });
+  };
+
   function toggleFullscreen() {
     const mapDiv = document.getElementById("mapContainer");
     if (!document.fullscreenElement) {
@@ -146,7 +213,7 @@ const router = useRouter()
       document.exitFullscreen();
     }
   }
-  
+
   if (loadError)
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
@@ -161,13 +228,14 @@ const router = useRouter()
     );
 
   return (
-    <div id="mapContainer"  style={{ position: "relative", width: "100vw", height: "100vh" }}>
-            <GoogleMap
+    <div id="mapContainer" style={{ position: "relative", width: "100vw", height: "100vh" }}>
+      <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
         zoom={Math.round(Math.log2(360 / region.latitudeDelta))}
         onIdle={onIdle}
         onLoad={onLoad}
+        onClick={onMapClick}
         mapTypeId={mapType === "standard" ? "roadmap" : "satellite"}
         options={{
           streetViewControl: false,
@@ -219,14 +287,36 @@ const router = useRouter()
         )}
 
         {children}
+        
+        {/* Markerul de locație cu efect de pulsare adăugat */}
+        {userLocation && userLocation.latitude && userLocation.longitude && (
+          <PulsingMarker
+            position={{ lat: userLocation.latitude, lng: userLocation.longitude }}
+            onClick={() => {
+              if (mapInstance) {
+                mapInstance.panTo({ lat: userLocation.latitude, lng: userLocation.longitude });
+              }
+            }}
+          />
+        )}
+        
+        {/* Dacă doriți să păstrați și markerul implicit, nu eliminați codul de mai jos.
+            Comentați blocul de mai jos pentru a afișa doar markerul pulsator. */}
+        {/*
+        { userLocation && userLocation.latitude && userLocation.longitude && (
+          <CustomMarker position={{ lat: userLocation.latitude, lng: userLocation.longitude }}>
+            <MdMyLocation size={30} color="green" />
+          </CustomMarker>
+        )}
+        */}
       </GoogleMap>
 
       {/* Indicatorul nivelului de zoom */}
       <div
         style={{
           position: "absolute",
-          top: "10px",
-          right: "60px",
+          top: "1%",
+          right: "1%",
           backgroundColor: "rgba(255,255,255,0.8)",
           padding: "8px",
           borderRadius: "4px",
@@ -236,11 +326,12 @@ const router = useRouter()
         <span>{zoomLevel}</span>
       </div>
 
-      {/* Butonul pentru deschiderea filtrelor */}
  
 
+
+      {/* Butonul pentru deschiderea filtrelor */}
       <button
-     onClick={toggleFullscreen}
+        onClick={toggleFullscreen}
         style={{
           position: "absolute",
           bottom: "90%",
@@ -257,13 +348,12 @@ const router = useRouter()
           boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
         }}
       >
-       <MdFullscreen size={30} />
+        <MdFullscreen size={30} />
       </button>
-      {/* Butonul pentru deschiderea filtrelor */}
- 
 
+      {/* Butonul pentru deschiderea filtrelor */}
       <button
-      onClick={() => router.push("/panou-principal")}
+        onClick={() => setVisible(!visible)}
         style={{
           position: "absolute",
           bottom: "80%",
@@ -280,14 +370,12 @@ const router = useRouter()
           boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
         }}
       >
-       <MdOutlineHome size={30} />
+        <MdFilterList size={30} />
       </button>
 
-      {/* Butonul pentru deschiderea filtrelor */}
- 
-
+      {/* Butonul pentru schimbarea tipului de hartă */}
       <button
-        onClick={() => setVisible(!visible)}
+        onClick={toggleMapType}
         style={{
           position: "absolute",
           bottom: "70%",
@@ -304,61 +392,123 @@ const router = useRouter()
           boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
         }}
       >
-  <MdFilterList size={30} />
-      </button>
-
-      {/* Butonul pentru schimbarea tipului de hartă */}
-
-
-               <button
-      onClick={toggleMapType}
-        style={{
-          position: "absolute",
-          bottom: "60%",
-          left: "10px",
-          padding: "12px",
-          backgroundColor: "#ffffff", // Fundal alb
-          border: "none",
-          borderRadius: "50%", // Formă circulară
-          cursor: "pointer",
-          zIndex: 1000,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-        }}
-      >
- {mapType === "standard" ? (
-            <MdSatellite size={30} color="#0000ff" />
-          ) : (
-            <MdMap size={30} color="#0000ff" />
-          )}
+        {mapType === "standard" ? (
+          <MdSatellite size={30} color="#0000ff" />
+        ) : (
+          <MdMap size={30} color="#0000ff" />
+        )}
       </button>
 
 
-              {/* Buton pentru filtrul de hidranți (ex: cel mai apropiat) */}
-              {region && userLocation && (
-         <button
-  onClick={goToNearestHydrant}
-  style={{
-    position: "absolute",
-    bottom: "50%",
-    left: "10px",
-    padding: "12px",
-    backgroundColor: "#4caf50", // Fundal verde
-    border: "none",
-    borderRadius: "50%", // Formă circulară
-    cursor: "pointer",
-    zIndex: 1000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-  }}
->
-  <MdFireHydrantAlt size={24} color="white" />
-</button>
-)}
+      {/* Buton pentru filtrul de hidranți (ex: cel mai apropiat) */}
+      {region && userLocation && (
+        <button
+          onClick={goToNearestHydrant}
+          style={{
+            position: "absolute",
+            bottom: "60%",
+            left: "10px",
+            padding: "12px",
+            backgroundColor: "#4caf50", // Fundal verde
+            border: "none",
+            borderRadius: "50%", // Formă circulară
+            cursor: "pointer",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+          }}
+        >
+          <MdFireHydrantAlt size={24} color="white" />
+        </button>
+      )}
+
+      {/* Butonul pentru deschiderea paginii de administrare sau de deconectare */}
+      {isAdmin  ? (
+        <button
+          onClick={() => router.push("/panou-principal")}
+          style={{
+            position: "absolute",
+            bottom: "50%",
+            left: "10px",
+            padding: "12px",
+            backgroundColor: "#ffffff", // Fundal alb
+            border: "none",
+            borderRadius: "50%", // Formă circulară
+            cursor: "pointer",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+          }}
+        >
+          <MdOutlineHome size={30} />
+        </button>
+      ) : (
+        null
+      )}
+
+<button
+          onClick={(e) => {
+            e.preventDefault();
+            handleLogout();
+            router.push("/signin");
+          }}
+          style={{
+            position: "absolute",
+            bottom: "40%",
+            left: "10px",
+            padding: "12px",
+            backgroundColor: "#ffffff", // Fundal alb
+            border: "none",
+            borderRadius: "50%", // Formă circulară
+            cursor: "pointer",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+          }}
+        >
+          <MdOutlineLogout size={30} />
+        </button>
+
+           {/* Butonul pentru re-centrarea hărții la locația utilizatorului */}
+           {userLocation && (
+        <button
+          onClick={() => {
+            if (mapInstance) {
+              mapInstance.panTo({ lat: userLocation.latitude, lng: userLocation.longitude });
+            }
+          }}
+          style={{
+            position: "absolute",
+            bottom: "30%",
+            left: "10px",
+            padding: "12px",
+            backgroundColor: "#ffffff", // Fundal alb
+            border: "none",
+            borderRadius: "50%", // Formă circulară
+            cursor: "pointer",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+          }}
+        >
+          <MdMyLocation size={30} color="#0047AB" />
+        </button>
+      )}
+      <MultiSelectDialog setVisible={setVisible} visible={visible} handleFilters={handleFilters} />
+      <NavigationDialog
+        open={Boolean(open)}
+        marker={marker}
+        onClose={() => onClose(null)}
+        onConfirm={onConfirm}
+      />
     </div>
   );
 };

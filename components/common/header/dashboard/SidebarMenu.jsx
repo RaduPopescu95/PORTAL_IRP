@@ -1,20 +1,53 @@
 "use client";
 
 import Link from "next/link";
-
 import {
   isParentPageActive,
   isSinglePageActive,
 } from "../../../../utils/daynamicNavigation";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { handleLogout } from "@/utils/authUtils";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
 import { authentication } from "@/firebase";
+import ReactDOM from "react-dom";
+import React from "react";
+
+// Componenta de overlay care acoperă tot ecranul
+const LoadingOverlay = () => {
+  return ReactDOM.createPortal(
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        backgroundColor: "rgba(0, 0, 0, 0)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 10000,
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          padding: "20px",
+          borderRadius: "5px",
+          fontSize: "1.2rem",
+          fontWeight: "bold",
+        }}
+      >
+        Se încarcă...
+      </div>
+    </div>,
+    document.body
+  );
+};
 
 const SidebarMenu = ({ partenerId }) => {
-  const { currentUser, userData, loading } = useAuth();
+  const { currentUser, userData, loading, isAdmin, isPowerAdmin } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -23,46 +56,41 @@ const SidebarMenu = ({ partenerId }) => {
   ];
 
   useEffect(() => {
-    // console.log(currentUser);
-    // if (!currentUser) {
-    //   router.push("/signin");
-    // }
+    // Dacă userul nu e logat, îl redirecționăm la /signin
     const unsubscribe = authentication.onAuthStateChanged(async (user) => {
-      console.log("start use effect from auth CHECK", user);
       if (!user) {
-        try {
-          router.push("/signin");
-        } catch (error) {
-          console.error("Failed to fetch user data:", error);
-        }
+        router.push("/signin");
       }
     });
-
     return unsubscribe;
   }, []);
 
+  // Dacă încă se încarcă datele, afișăm overlay-ul de loading
+
+
+  // Dacă nu există userul, redirecționăm la signin
+  if (!currentUser) {
+    router.push("/signin");
+   
+  }
+
+  if (!isAdmin && !isPowerAdmin) {
+    router.push("/harta");
+   
+  }
+  if (loading && !isAdmin && !isPowerAdmin &&  !currentUser) {
+    return <LoadingOverlay />;
+  }
   return (
     <>
       <ul className="sidebar-menu">
         <li className="sidebar_header header"></li>
-        {/* End header */}
-
         <li className="title">
-          {/* <span>Main</span> */}
           <ul>
-            {/* <li
-              className={`treeview ${
-                isSinglePageActive("/my-dashboard", pathname) ? "active" : ""
-              }`}
-            >
-              <Link href="/panou-principal">
-                <i className="flaticon-layers"></i>
-                <span>Activitatea mea</span>
-              </Link>
-            </li> */}
+            {/* Meniu vizibil oricărui utilizator logat */}
             <li
               className={`treeview ${
-                isSinglePageActive("/", pathname) ? "active" : ""
+                isSinglePageActive("/harta", pathname) ? "active" : ""
               }`}
             >
               <Link href="/harta">
@@ -70,96 +98,100 @@ const SidebarMenu = ({ partenerId }) => {
                 <span>Harta</span>
               </Link>
             </li>
-            <li
-              className={`treeview ${
-                isSinglePageActive("/", pathname) ? "active" : ""
-              }`}
-            >
-              <Link href="/">
-                <i className="flaticon-layers"></i>
-                <span>Panou Principal</span>
-              </Link>
-            </li>
 
-            <li
-              className={`treeview ${
-                isSinglePageActive("/creaza-BICP", pathname) ? "active" : ""
-              }`}
-            >
-              <Link href="/creaza-BICP">
-                <i className="flaticon-plus"></i>
-                <span>Creaza BICP</span>
-              </Link>
-            </li>
-            <li
-              className={`treeview ${
-                isSinglePageActive("/lista-BICP", pathname) ? "active" : ""
-              }`}
-            >
-              <Link href="/lista-BICP">
-                <i className="flaticon-layers"></i>
-                <span>Lista BICP</span>
-              </Link>
-            </li>
-            <li
-              className={`treeview ${
-                isSinglePageActive("/adauga-interventie", pathname)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <Link href="/creaza-acreditare">
-                <i className="flaticon-plus"></i>
-                <span>Creaza acreditare</span>
-              </Link>
-            </li>
-            <li
-              className={`treeview ${
-                isSinglePageActive("/lista-BICP", pathname) ? "active" : ""
-              }`}
-            >
-              <Link href="/lista-acreditari">
-                <i className="flaticon-layers"></i>
-                <span>Lista Acreditari</span>
-              </Link>
-            </li>
-            {/* <li
-              className={`treeview ${
-                isSinglePageActive("/adauga-interventie", pathname)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <Link href="/adauga-interventie">
-                <i className="flaticon-plus"></i>
-                <span>Adauga zi de interventie</span>
-              </Link>
-            </li> */}
-            <li
-              className={`treeview ${
-                isSinglePageActive("/adauga-solicitare-verbala", pathname)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <Link href="/adauga-solicitare-verbala">
-                <i className="flaticon-plus"></i>
-                <span>Adauga solicitare verbala</span>
-              </Link>
-            </li>
+            {(isAdmin || isPowerAdmin) && (
+              <>
+                <li
+                  className={`treeview ${
+                    isSinglePageActive("/", pathname) ? "active" : ""
+                  }`}
+                >
+                  <Link href="/panou-principal">
+                    <i className="flaticon-layers"></i>
+                    <span>Panou Principal</span>
+                  </Link>
+                </li>
+              </>
+            )}
 
-            <li
-              className={`treeview ${
-                isSinglePageActive("/lista-solicitari-verbale", pathname)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <Link href="/lista-solicitari-verbale">
-                <i className="flaticon-layers"></i>
-                <span>Lista solicitari verbale</span>
-              </Link>
-            </li>
+            {/* Link-uri afișate exclusiv pentru powerAdmin */}
+            {isPowerAdmin && (
+              <>
+                <li
+                  className={`treeview ${
+                    isSinglePageActive("/creaza-BICP", pathname) ? "active" : ""
+                  }`}
+                >
+                  <Link href="/creaza-BICP">
+                    <i className="flaticon-plus"></i>
+                    <span>Creaza BICP</span>
+                  </Link>
+                </li>
+                <li
+                  className={`treeview ${
+                    isSinglePageActive("/lista-BICP", pathname) ? "active" : ""
+                  }`}
+                >
+                  <Link href="/lista-BICP">
+                    <i className="flaticon-layers"></i>
+                    <span>Lista BICP</span>
+                  </Link>
+                </li>
+                <li
+                  className={`treeview ${
+                    isSinglePageActive("/creaza-acreditare", pathname)
+                      ? "active"
+                      : ""
+                  }`}
+                >
+                  <Link href="/creaza-acreditare">
+                    <i className="flaticon-plus"></i>
+                    <span>Creaza acreditare</span>
+                  </Link>
+                </li>
+                <li
+                  className={`treeview ${
+                    isSinglePageActive("/lista-acreditari", pathname)
+                      ? "active"
+                      : ""
+                  }`}
+                >
+                  <Link href="/lista-acreditari">
+                    <i className="flaticon-layers"></i>
+                    <span>Lista Acreditari</span>
+                  </Link>
+                </li>
+                <li
+                  className={`treeview ${
+                    isSinglePageActive(
+                      "/adauga-solicitare-verbala",
+                      pathname
+                    )
+                      ? "active"
+                      : ""
+                  }`}
+                >
+                  <Link href="/adauga-solicitare-verbala">
+                    <i className="flaticon-plus"></i>
+                    <span>Adauga solicitare verbala</span>
+                  </Link>
+                </li>
+                <li
+                  className={`treeview ${
+                    isSinglePageActive("/lista-solicitari-verbale", pathname)
+                      ? "active"
+                      : ""
+                  }`}
+                >
+                  <Link href="/lista-solicitari-verbale">
+                    <i className="flaticon-layers"></i>
+                    <span>Lista solicitari verbale</span>
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {/* Meniu pentru cont (logout etc.) */}
             {manageAccount.map((item) => (
               <li
                 className={
@@ -170,15 +202,10 @@ const SidebarMenu = ({ partenerId }) => {
                 <Link
                   href={item.route}
                   onClick={(e) => {
-                    // Prevenim comportamentul default al link-ului dacă este necesar
                     if (item.name === "Deconectare") {
                       e.preventDefault();
-                      console.log(userData);
-                      console.log(currentUser);
                       handleLogout();
-                      router.push("/");
-                    } else {
-                      console.log("profile...");
+                      router.push("/signin");
                     }
                   }}
                 >
@@ -186,149 +213,8 @@ const SidebarMenu = ({ partenerId }) => {
                 </Link>
               </li>
             ))}
-            {/* <li
-              className={`treeview ${
-                isSinglePageActive("/creaza-produs-serviciu", pathname)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <Link href="/creaza-produs-serviciu">
-                <i className="flaticon-plus"></i>
-                <span>Creaza Produs/serviciu</span>
-              </Link>
-            </li> */}
-
-            {/* <li
-              className={`treeview ${
-                isSinglePageActive("/lista-produse-servicii", pathname)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <Link href="/lista-produse-servicii">
-                <i className="flaticon-layers"></i>
-                <span>Lista produse/servicii</span>
-              </Link>
-            </li> */}
-            {/* <li
-              className={`treeview ${
-                isSinglePageActive("/my-message", pathname)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <Link href="/my-message">
-                <i className="flaticon-envelope"></i>
-                <span> Message</span>
-              </Link>
-            </li> */}
           </ul>
         </li>
-        {/* End Main */}
-
-        {/* <li className="title">
-          <span>Manage Listings</span>
-          <ul>
-            <li
-              className={`treeview ${
-                isParentPageActive(myProperties, pathname) ? "active" : ""
-              }`}
-            >
-              <a data-bs-toggle="collapse" href="#my-property">
-                <i className="flaticon-home"></i> <span>My Properties</span>
-                <i className="fa fa-angle-down pull-right"></i>
-              </a>
-              <ul className="treeview-menu collapse" id="my-property">
-                {myProperties.map((item) => (
-                  <li key={item.id}>
-                    <Link href={item.route}>
-                      <i className="fa fa-circle"></i> {item.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </li>
-
-            <li
-              className={`treeview ${
-                isParentPageActive(reviews, pathname) ? "active" : ""
-              }`}
-            >
-              <a data-bs-toggle="collapse" href="#review">
-                <i className="flaticon-chat"></i>
-                <span>Reviews</span>
-                <i className="fa fa-angle-down pull-right"></i>
-              </a>
-              <ul className="treeview-menu collapse" id="review">
-                {reviews.map((item) => (
-                  <li key={item.id}>
-                    <Link href={item.route}>
-                      <i className="fa fa-circle"></i> {item.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </li>
-
-            <li
-              className={`treeview ${
-                isSinglePageActive("/my-favourites", pathname)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <Link href="/my-favourites">
-                <i className="flaticon-magnifying-glass"></i>
-                <span> My Favorites</span>
-              </Link>
-            </li>
-            <li
-              className={`treeview ${
-                isSinglePageActive("/my-saved-search", pathname)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <Link href="/my-saved-search">
-                <i className="flaticon-magnifying-glass"></i>
-                <span> Saved Search</span>
-              </Link>
-            </li>
-          </ul>
-        </li> */}
-
-        {/* <li className="title">
-          <span>Cont</span>
-          <ul>
-            {manageAccount.map((item) => (
-              <li
-                className={
-                  isSinglePageActive(item.route, pathname) ? "active" : ""
-                }
-                key={item.id}
-              >
-                <Link
-                  href={item.route}
-                  onClick={(e) => {
-                    // Prevenim comportamentul default al link-ului dacă este necesar
-                    if (item.name === "Deconectare") {
-                      e.preventDefault();
-                      console.log(userData);
-                      console.log(currentUser);
-                      handleLogout();
-                      router.push("/");
-                    } else {
-                      console.log("profile...");
-                    }
-                  }}
-                >
-                  <i className={item.icon}></i> <span>{item.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </li> */}
       </ul>
     </>
   );

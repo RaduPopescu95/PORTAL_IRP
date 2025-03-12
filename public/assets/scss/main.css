@@ -21190,3 +21190,24 @@ button.gm-ui-hover-effect:focus {
 .pro-sidebar .pro-menu a.ui-active {
   color: var(--color-primary) !important;
 }
+
+
+
+.pulse-marker {
+  animation: pulsate 1.5s ease-out infinite;
+}
+
+@keyframes pulsate {
+  0% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 1;
+  }
+}

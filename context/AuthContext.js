@@ -5,6 +5,10 @@ import { authentication } from "../firebase";
 import { handleGetUserInfo } from "../utils/handleFirebaseQuery";
 import { handleGetFirestore } from "@/utils/firestoreUtils";
 
+// Eliminăm importurile pentru array-urile de administratori
+// import { admins } from "@/data/administrareGrup";
+// import { powerAdmins } from "@/data/powerAdminGrup";
+
 const AuthContext = createContext();
 
 export const useAuth = () => {
@@ -16,10 +20,15 @@ export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [judete, setJudete] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isGuestUser, setIsGuestUser] = useState(false); // Inițializat ca false
+
+  // Noile stări pentru roluri
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isPowerAdmin, setIsPowerAdmin] = useState(false);
+
+  const [isGuestUser, setIsGuestUser] = useState(false);
   const [searchQueryParteneri, setSearchQueryPateneri] = useState("");
 
-  // Funcția pentru a seta utilizatorul ca guest user
+  // Funcția pentru setarea guest user
   const setAsGuestUser = (isGuest) => {
     try {
       localStorage.setItem("isGuestUser", isGuest ? "true" : "false");
@@ -35,16 +44,48 @@ export const AuthProvider = ({ children }) => {
       if (user) {
         try {
           const userDataFromFirestore = await handleGetUserInfo();
-          console.log(
-            "user data fetched at onAuthStateChanged....",
-            userDataFromFirestore
-          );
           setUserData(userDataFromFirestore);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
         }
       }
+
+      // Setează currentUser
       setCurrentUser(user);
+
+      // Verifică dacă user-ul este admin sau powerAdmin folosind colecții din Firestore
+      if (user?.uid) {
+        try {
+          // Presupunem că colecția de administratori se numește "Admins"
+          const adminDocs = await handleGetFirestore("Admins");
+          // Verificăm dacă user.uid apare fie ca document ID, fie în câmpul "uid"
+          const isUserAdmin = adminDocs.some(
+            (doc) => doc.uid === user.uid || doc.id === user.uid
+          );
+          console.log("isadmin...", isUserAdmin)
+          setIsAdmin(isUserAdmin);
+        } catch (error) {
+          console.error("Error checking admin status:", error);
+          setIsAdmin(false);
+        }
+
+        try {
+          // Presupunem că colecția de power administratori se numește "PowerAdmins"
+          const powerAdminDocs = await handleGetFirestore("PowerAdmins");
+          const isUserPowerAdmin = powerAdminDocs.some(
+            (doc) => doc.uid === user.uid || doc.id === user.uid
+          );
+          console.log("isPowerAdmin...", isUserPowerAdmin)
+          setIsPowerAdmin(isUserPowerAdmin);
+        } catch (error) {
+          console.error("Error checking power admin status:", error);
+          setIsPowerAdmin(false);
+        }
+      } else {
+        // Dacă nu e logat sau nu are uid
+        setIsAdmin(false);
+        setIsPowerAdmin(false);
+      }
 
       try {
         const judeteRomania = await handleGetFirestore("Judete");
@@ -55,12 +96,10 @@ export const AuthProvider = ({ children }) => {
 
       try {
         const guestUserValue = localStorage.getItem("isGuestUser");
-        // Setează isGuestUser ca true sau false bazat pe valoarea din localStorage
-        // Dacă valoarea nu există, va rămâne setat ca false
         setIsGuestUser(guestUserValue === "true");
       } catch (e) {
         console.error("Failed to fetch isGuestUser from localStorage:", e);
-        setIsGuestUser(false); // Setat ca false în cazul unei erori
+        setIsGuestUser(false);
       }
 
       setLoading(false);
@@ -73,11 +112,17 @@ export const AuthProvider = ({ children }) => {
     currentUser,
     userData,
     loading,
-    isGuestUser, // Includeți isGuestUser în context
-    setAsGuestUser, // Expuși funcția prin context
+    judete,
+
+    // Indicatori de rol
+    isAdmin,
+    isPowerAdmin,
+
+    // Restul stărilor și funcțiilor
+    isGuestUser,
+    setAsGuestUser,
     setUserData,
     setCurrentUser,
-    judete,
     searchQueryParteneri,
     setSearchQueryPateneri,
   };

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import dataHidranti from "../../../data/hidranti.json";
-import { MdLocalFireDepartment, MdMyLocation, MdFireHydrantAlt, MdFireTruck } from "react-icons/md";
+import { MdLocalFireDepartment, MdMyLocation, MdFireHydrantAlt, MdFireTruck, MdLocationCity } from "react-icons/md";
 import { FaTownHall, FaBiohazard, FaFireExtinguisher } from "react-icons/fa";
 import MyMapView from "@/components/harta/MapView";
 import MultiSelectDialog from "@/components/harta/MultiSelectDialog";
@@ -26,6 +26,8 @@ import { coordonateVoinesti } from "@/data/voinesti";
 import { coordonateCornesti } from "@/data/cornesti";
 import { coordonateVisina } from "@/data/visina";
 import { coordonateRacari } from "@/data/racari";
+import { primariiMarkers } from "@/data/primarii";
+import { FiHome } from "react-icons/fi";
 // Helper: Calculul distanței (formula haversine)
 const haversineDistance = (coords1, coords2) => {
   const toRad = (x) => (x * Math.PI) / 180;
@@ -180,14 +182,41 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
 
   const handleMarkerPress = (marker) => {
     setWasPressed(true);
-    // Normalizează coordonatele pentru a le folosi ușor
+    let latitude, longitude, title;
+  
+    // Pentru hidranți (din hidranti.json)
+    if (marker.Localizare) {
+      latitude = parseFloat(marker.Localizare.Latitudine);
+      longitude = parseFloat(marker.Localizare.Longitudine);
+      // Construiește un titlu bazat pe informații suplimentare, dacă există
+      title =
+        marker.title ||
+        `${marker.Localitate ? marker.Localitate + " - " : ""}${
+          marker.Stradă ? marker.Stradă + " " : ""
+        }${marker["NumărAdministrativ"] || ""}`.trim();
+    }
+    // Pentru markerii care vin din alte fișiere (subunități, Seveso, primării)
+    else if (marker.coordinates) {
+      latitude = marker.coordinates.latitude;
+      longitude = marker.coordinates.longitude;
+      // Folosește marker.title dacă există, altfel încearcă alte proprietăți specifice
+      title = marker.title || marker.numePrimar || marker.nrGis || "Markerul selectat";
+    }
+    // Fallback: dacă markerul are deja proprietăți latitude și longitude
+    else {
+      latitude = marker.latitude;
+      longitude = marker.longitude;
+      title = marker.title || "Markerul selectat";
+    }
+  
     setSelectedMarker({
       ...marker,
-      latitude: marker.Localizare ? parseFloat(marker.Localizare.Latitudine) : marker.latitude,
-      longitude: marker.Localizare ? parseFloat(marker.Localizare.Longitudine) : marker.longitude,
-      title: marker.title || "Markerul selectat"
+      latitude,
+      longitude,
+      title,
     });
   };
+  
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -253,12 +282,15 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
   };
 
   const onMapRegionChangeComplete = (reg) => {
-    setRegion(reg); // Actualizează starea pentru a menține noua poziție a hărții
-    setLoadingHidranti(true);
-    console.log("Region change completed:", reg);
-    const result = filterMarkersByZoom(reg.latitudeDelta, reg);
-    setDisplayedMarkers(result);
-    setLoadingHidranti(false);
+    if (filters.hidranti){
+      setRegion(reg); // Actualizează starea pentru a menține noua poziție a hărții
+      setLoadingHidranti(true);
+      console.log("Region change completed:", reg);
+      const result = filterMarkersByZoom(reg.latitudeDelta, reg);
+      setDisplayedMarkers(result);
+      setLoadingHidranti(false);
+
+    }
   };
   
 
@@ -456,8 +488,12 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
           zoomLevel={zoomLevels}
           goToNearestHydrant={goToNearestHydrant}
           filters={filters}  // <-- Asigură-te că filtrele sunt transmise aici
-       
+          handleFilters={handleFilters}
           userLocation={userLocation}
+          open={Boolean(selectedMarker)}
+          marker={selectedMarker}
+          onClose={() => setSelectedMarker(null)}
+          onConfirm={handleGetDirections}
         >
           {filters.raioane && (
             <>
@@ -480,53 +516,57 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
                 <MdFireHydrantAlt size={24} color="blue" />
             </CustomMarker>
             ))}
-
-          {/* {filters.primarii &&
-            primariiMarkers.length > 0 &&
+          {filters.primarii &&
+            primariiMarkers.length > 0  &&
             primariiMarkers.map((c, index) => (
-              <div
-                key={index}
-                onClick={() => handleMarkerPress(c)}
-                style={{
-                  position: "absolute",
-                  transform: "translate(-50%, -50%)",
-                  cursor: "pointer",
-                }}
-              >
-                <FaTownHall size={24} color="black" />
-                <div onClick={() => setPrimarieData(c)}>
-                  <PrimariiCallout marker={c} name="fire-hydrant" />
-                </div>
-              </div>
-            ))} */}
-{/* 
-          {filters.seveso &&
-            sevesoMarkers.length > 0 &&
-            sevesoMarkers.map((c, index) => (
-              <div
-                key={index}
-                style={{
-                  position: "absolute",
-                  transform: "translate(-50%, -50%)",
-                }}
-              >
-                <div onClick={() => handleMarkerPress(c)}>
-                  <FaBiohazard size={40} color="orange" />
-                </div>
-                <div onClick={() => setSevesoData(c)}>
-                  <SevesoCallout marker={c} name="fire-hydrant" />
-                </div>
-                {situatieSeveso === "Situatia 2" && c.zonaDoi && (
-                  <SituatiaDoi c={c} index={index} />
-                )}
-                {situatieSeveso === "Situatia 1" && c.zonaUnu && (
-                  <SituatiaUnu c={c} index={index} />
-                )}
-                {situatieSeveso === "RezerveBleve" && c.rezerveBleve && (
-                  <RezerveBleve c={c} index={index} />
-                )}
-              </div>
-            ))} */}
+              <CustomMarker
+              key={`primarie-${index}`}
+              position={{
+                lat: c.coordinates.latitude,
+                lng:  c.coordinates.longitude,
+              }}
+              onClick={() => handleMarkerPress(c)}
+            >
+        
+        <MdLocationCity size={24} color="black" />
+            </CustomMarker>
+            ))}
+
+          
+
+{filters.seveso &&
+  sevesoMarkers.length > 0 &&
+  sevesoMarkers.map((c, index) => (
+    <CustomMarker
+      key={`seveso-${index}`}
+      position={{
+        lat: c.coordinates.latitude,
+        lng: c.coordinates.longitude,
+      }}
+    >
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        {/* Icon-ul ce declanșează handleMarkerPress */}
+        <div onClick={() => handleMarkerPress(c)}>
+          <FaBiohazard size={40} color="orange" />
+        </div>
+        {/* Callout-ul ce declanșează setSevesoData; stopPropagation previne declanșarea onClick-ului părintelui */}
+        {/* <div onClick={(e) => { e.stopPropagation(); setSevesoData(c); }}>
+          <SevesoCallout marker={c} name="fire-hydrant" />
+        </div> */}
+        {/* Condiționale pentru situații */}
+        {situatieSeveso === "Situatia 2" && c.zonaDoi && (
+          <SituatiaDoi c={c} index={index} />
+        )}
+        {situatieSeveso === "Situatia 1" && c.zonaUnu && (
+          <SituatiaUnu c={c} index={index} />
+        )}
+        {situatieSeveso === "RezerveBleve" && c.rezerveBleve && (
+          <RezerveBleve c={c} index={index} />
+        )}
+      </div>
+    </CustomMarker>
+  ))}
+
 
           {/* {filters.svsu &&
             primariiMarkers.length > 0 &&
@@ -547,7 +587,7 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
               </div>
             ))} */}
 
-          {filters.spsu &&
+          {/* {filters.spsu &&
             primariiMarkers.length > 0 &&
             primariiMarkers.map((c, index) => (
               <div
@@ -564,7 +604,7 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
                   <p>Custom Callout for spsu</p>
                 </div>
               </div>
-            ))}
+            ))} */}
 
           {filters.subunitati &&
             subunitatiMarkers.map((c, index) => (
@@ -593,11 +633,11 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
             </div>
           )}
 
-{ userLocation && userLocation.latitude && userLocation.longitude && (
+{/* { userLocation && userLocation.latitude && userLocation.longitude && (
   <CustomMarker position={{ lat: userLocation.latitude, lng: userLocation.longitude }}>
-    <MdMyLocation size={30} color="blue" />
+    <MdMyLocation size={30} color="green" />
   </CustomMarker>
-)}
+)} */}
 
         </MyMapView>
       </div>
@@ -614,8 +654,8 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
         </div>
       )}
 
-      <MultiSelectDialog setVisible={setVisible} visible={visible} handleFilters={handleFilters} />
-      <SubunitateDialog setData={setData} visible={Boolean(calloutData.title)} calloutData={calloutData} />
+      {/* <MultiSelectDialog setVisible={setVisible} visible={visible} handleFilters={handleFilters} /> */}
+      {/* <SubunitateDialog setData={setData} visible={Boolean(calloutData.title)} calloutData={calloutData} />
       <PrimariiDialog setData={setPrimarieData} visible={Boolean(primarieData.title)} calloutData={primarieData} />
       <SevesoDialog
         setData={setSevesoData}
@@ -623,14 +663,14 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
         calloutData={sevesoData}
         handleZonaUrgenta={handleZonaUrgenta}
         situatieSeveso={situatieSeveso}
-      />
+      /> */}
           {/* Dialogul de navigare */}
-          <NavigationDialog
+          {/* <NavigationDialog
         open={Boolean(selectedMarker)}
         marker={selectedMarker}
         onClose={() => setSelectedMarker(null)}
         onConfirm={handleGetDirections}
-      />
+      /> */}
 
  
 

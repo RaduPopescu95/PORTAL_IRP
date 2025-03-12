@@ -4,29 +4,31 @@ import { useAuth } from "@/context/AuthContext";
 import { authentication } from "@/firebase";
 import { handleSignIn } from "@/utils/authUtils";
 import { useRouter } from "next/navigation"; // Aici ar trebui să fie "next/router", nu "next/navigation"
-import React, { useState } from "react"; // Importăm useState din React
+import React, { useState } from "react";
+import { FiEye, FiEyeOff } from "react-icons/fi"; // Importăm icon-urile de la react-icons
 
 const Form = () => {
-  // Stări locale pentru email și parolă
+  // Stări locale pentru email, parolă, eroare și vizibilitatea parolei
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // Stare pentru a stoca mesaje de eroare
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // Stare pentru a comuta tipul input-ului
   const { setCurrentUser } = useAuth();
   const router = useRouter();
 
-  // Functie pentru a gestiona trimiterea formularului
+  // Funcție pentru a gestiona trimiterea formularului
   const handleSubmit = (event) => {
     event.preventDefault();
 
     handleSignIn(email, password)
       .then((userCredentials) => {
         console.log("user credentials...", userCredentials);
-        setCurrentUser(userCredentials); // Aici trebuie să asiguri că userCredentials este gestionat corect
+        setCurrentUser(userCredentials);
         router.push("/panou-principal");
       })
       .catch((error) => {
         console.error("Error during sign in:", error.message);
-        setError("Failed to log in. Error message: " + error.message); // Utilizează error.message pentru a oferi feedback utilizatorului
+        setError("Failed to log in. Error message: " + error.message);
       });
   };
 
@@ -39,8 +41,7 @@ const Form = () => {
         <div className="alert alert-danger" role="alert">
           {error}
         </div>
-      )}{" "}
-      {/* Afișăm mesajul de eroare */}
+      )}
       <div className="input-group mb-2 mr-sm-2">
         <input
           type="email"
@@ -58,7 +59,7 @@ const Form = () => {
       </div>
       <div className="input-group form-group">
         <input
-          type="password"
+          type={showPassword ? "text" : "password"}
           className="form-control"
           required
           placeholder="Password"
@@ -66,8 +67,12 @@ const Form = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
         <div className="input-group-prepend">
-          <div className="input-group-text">
-            <i className="flaticon-password"></i>
+          <div
+            className="input-group-text"
+            onClick={() => setShowPassword(!showPassword)}
+            style={{ cursor: "pointer" }}
+          >
+            {showPassword ? <FiEyeOff /> : <FiEye />}
           </div>
         </div>
       </div>

@@ -54,7 +54,7 @@ const MultiSelectDialog = ({ visible, setVisible, handleFilters }) => {
           }
           label="Hidranti"
         />
-        {/* <FormControlLabel
+        <FormControlLabel
           control={
             <Checkbox
               checked={checkedItems.primarii}
@@ -62,7 +62,7 @@ const MultiSelectDialog = ({ visible, setVisible, handleFilters }) => {
             />
           }
           label="Primarii"
-        /> */}
+        />
         <FormControlLabel
           control={
             <Checkbox
