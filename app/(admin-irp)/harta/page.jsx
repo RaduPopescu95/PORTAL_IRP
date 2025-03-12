@@ -217,12 +217,19 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
     });
   };
   
-
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
+          // Setează regiunea cu un delta prestabilit
+          setRegion({
+            latitude,
+            longitude,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          });
+          // Setează locația utilizatorului
           setUserLocation({ latitude, longitude });
         },
         (error) => {
@@ -234,7 +241,50 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
       setErrorMsg("Geolocation is not supported by this browser.");
     }
   }, []);
-
+  
+  const handleGetLocation = () => {
+    alert(`Începem să preluăm locația...`);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          // Setăm regiunea cu valorile primite
+          setRegion({
+            latitude,
+            longitude,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          });
+  
+          // Setăm locația utilizatorului în state
+          setUserLocation({ latitude, longitude });
+  
+          // Afișăm alerta
+          alert(`Locație preluată cu succes!
+  Latitude: ${latitude},
+  Longitude: ${longitude}`);
+        },
+        (error) => {
+          // Alerta cu detalii despre eroare
+          alert(`Eroare la obținerea locației: ${error.code} - ${error.message}`);
+          setErrorMsg("Permisiunea de a accesa locația a fost refuzată.");
+          console.error("Eroare la obținerea locației:", error);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      );
+    } else {
+      setErrorMsg("Geolocația nu este suportată de browserul actual.");
+      alert("Geolocația nu este suportată de browserul actual.");
+    }
+  };
+  
+  
+  
   // Funcție pentru a obține coordonatele dintr-un loc (adaptată pentru web)
   const getCoordsFromName = async (loc, details) => {
     const data = {
@@ -422,28 +472,7 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
     setSituatie(sit === situatieSeveso ? "" : sit);
   };
 
-    // Actualizează locația utilizatorului
-    useEffect(() => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            setRegion({
-              latitude,
-              longitude,
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
-            });
-          },
-          (error) => {
-            setErrorMsg("Permission to access location was denied");
-            console.error("Geolocation error:", error);
-          }
-        );
-      } else {
-        setErrorMsg("Geolocation is not supported by this browser.");
-      }
-    }, []);
+   
 
 
     // Funcția ce caută cel mai apropiat hidrant față de locația utilizatorului
@@ -494,6 +523,7 @@ const filterMarkersByZoom = (latitudeDelta, reg) => {
           marker={selectedMarker}
           onClose={() => setSelectedMarker(null)}
           onConfirm={handleGetDirections}
+          handleGetLocation={handleGetLocation}
         >
           {filters.raioane && (
             <>

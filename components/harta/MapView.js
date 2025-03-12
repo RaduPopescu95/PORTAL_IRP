@@ -19,6 +19,7 @@ import { useAuth } from "@/context/AuthContext";
 import { handleLogout } from "@/utils/authUtils";
 import MultiSelectDialog from "./MultiSelectDialog";
 import NavigationDialog from "./NavigationDialog";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from "@mui/material";
 
 // Componenta PulsingMarker adăugată (nu am eliminat alt cod sau comentarii)
 const PulsingMarker = ({ position, onClick }) => {
@@ -82,7 +83,8 @@ const MyMapView = ({
   marker,
   onClose,
   onConfirm,
-  handleFilters
+  handleFilters,
+  handleGetLocation
 }) => {
   const [mapType, setMapType] = useState("standard");
   const [mapInstance, setMapInstance] = useState(null);
@@ -479,6 +481,33 @@ const MyMapView = ({
           <MdMyLocation size={30} color="#0047AB" />
         </button>
       )}
+        
+      {/* Dialog MUI dacă nu există userLocation */}
+      <Dialog
+        open={!userLocation}              // Se afișează doar dacă userLocation e null/undefined
+        onClose={() => {}}                // Dacă nu vrei să-l închizi fără să iei locația, lasă gol
+        disableEscapeKeyDown              // Nu poate fi închis cu ESC
+        fullWidth
+        maxWidth="xs"
+        // Stil pentru backdrop, ca să fie o nuanță mai închisă
+        BackdropProps={{
+          style: { backgroundColor: "rgba(0, 0, 0, 0.5)" },
+        }}
+      >
+        <DialogTitle>Avem nevoie de locația ta</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Pentru a folosi toate funcționalitățile, avem nevoie de permisiunea de a-ți accesa
+            locația. Te rugăm să apeși butonul de mai jos și să acorzi permisiunea.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={handleGetLocation}>
+            Obține locația
+          </Button>
+        </DialogActions>
+      </Dialog>
+     
 
 {isAdmin  ? (
         <button
