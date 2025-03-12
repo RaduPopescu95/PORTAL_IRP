@@ -425,30 +425,7 @@ const MyMapView = ({
       )}
 
       {/* Butonul pentru deschiderea paginii de administrare sau de deconectare */}
-      {isAdmin  ? (
-        <button
-          onClick={() => router.push("/panou-principal")}
-          style={{
-            position: "absolute",
-            bottom: "50%",
-            left: "10px",
-            padding: "12px",
-            backgroundColor: "#ffffff", // Fundal alb
-            border: "none",
-            borderRadius: "50%", // Formă circulară
-            cursor: "pointer",
-            zIndex: 1000,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-          }}
-        >
-          <MdOutlineHome size={30} />
-        </button>
-      ) : (
-        null
-      )}
+
 
 <button
           onClick={(e) => {
@@ -458,7 +435,7 @@ const MyMapView = ({
           }}
           style={{
             position: "absolute",
-            bottom: "40%",
+            bottom: "50%",
             left: "10px",
             padding: "12px",
             backgroundColor: "#ffffff", // Fundal alb
@@ -485,7 +462,7 @@ const MyMapView = ({
           }}
           style={{
             position: "absolute",
-            bottom: "30%",
+            bottom: "40%",
             left: "10px",
             padding: "12px",
             backgroundColor: "#ffffff", // Fundal alb
@@ -501,6 +478,31 @@ const MyMapView = ({
         >
           <MdMyLocation size={30} color="#0047AB" />
         </button>
+      )}
+
+{isAdmin  ? (
+        <button
+          onClick={() => router.push("/panou-principal")}
+          style={{
+            position: "absolute",
+            bottom: "30%",
+            left: "10px",
+            padding: "12px",
+            backgroundColor: "#ffffff", // Fundal alb
+            border: "none",
+            borderRadius: "50%", // Formă circulară
+            cursor: "pointer",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+          }}
+        >
+          <MdOutlineHome size={30} />
+        </button>
+      ) : (
+        null
       )}
       <MultiSelectDialog setVisible={setVisible} visible={visible} handleFilters={handleFilters} />
       <NavigationDialog

@@ -8,6 +8,7 @@ import DialogActions from "@mui/material/DialogActions";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import Button from "@mui/material/Button";
+import { useAuth } from "@/context/AuthContext";
 
 const MultiSelectDialog = ({ visible, setVisible, handleFilters }) => {
   const [checkedItems, setCheckedItems] = useState({
@@ -19,7 +20,7 @@ const MultiSelectDialog = ({ visible, setVisible, handleFilters }) => {
     spsu: false,
     subunitati: false,
   });
-
+  const { currentUser, userData, loading, isAdmin, isPowerAdmin } = useAuth();
   const hideDialog = () => setVisible(false);
 
   const toggleItem = (item) => {
@@ -36,15 +37,7 @@ const MultiSelectDialog = ({ visible, setVisible, handleFilters }) => {
     <Dialog open={visible} onClose={hideDialog}>
       <DialogTitle>Selectează filtre</DialogTitle>
       <DialogContent>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={checkedItems.subunitati}
-              onChange={() => toggleItem("subunitati")}
-            />
-          }
-          label="Subunitati"
-        />
+        {/* Filtrul "Hidranti" este afișat pentru toți utilizatorii */}
         <FormControlLabel
           control={
             <Checkbox
@@ -54,51 +47,65 @@ const MultiSelectDialog = ({ visible, setVisible, handleFilters }) => {
           }
           label="Hidranti"
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={checkedItems.primarii}
-              onChange={() => toggleItem("primarii")}
+        {/* Restul filtrelor se afișează doar dacă utilizatorul este admin sau powerAdmin */}
+        {(isAdmin || isPowerAdmin) && (
+          <>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={checkedItems.subunitati}
+                  onChange={() => toggleItem("subunitati")}
+                />
+              }
+              label="Subunitati"
             />
-          }
-          label="Primarii"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={checkedItems.raioane}
-              onChange={() => toggleItem("raioane")}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={checkedItems.primarii}
+                  onChange={() => toggleItem("primarii")}
+                />
+              }
+              label="Primarii"
             />
-          }
-          label="Raioane"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={checkedItems.seveso}
-              onChange={() => toggleItem("seveso")}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={checkedItems.raioane}
+                  onChange={() => toggleItem("raioane")}
+                />
+              }
+              label="Raioane"
             />
-          }
-          label="Seveso"
-        />
-        {/* <FormControlLabel
-          control={
-            <Checkbox
-              checked={checkedItems.svsu}
-              onChange={() => toggleItem("svsu")}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={checkedItems.seveso}
+                  onChange={() => toggleItem("seveso")}
+                />
+              }
+              label="Seveso"
             />
-          }
-          label="SVSU"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={checkedItems.spsu}
-              onChange={() => toggleItem("spsu")}
+            {/* <FormControlLabel
+              control={
+                <Checkbox
+                  checked={checkedItems.svsu}
+                  onChange={() => toggleItem("svsu")}
+                />
+              }
+              label="SVSU"
             />
-          }
-          label="SPSU"
-        /> */}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={checkedItems.spsu}
+                  onChange={() => toggleItem("spsu")}
+                />
+              }
+              label="SPSU"
+            /> */}
+          </>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={hideDialog}>Cancel</Button>
