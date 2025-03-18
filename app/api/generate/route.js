@@ -11,7 +11,7 @@ try {
       type: process.env.GOOGLE_TYPE,
       project_id: process.env.GOOGLE_PROJECT_ID, // Înlocuiește \\n cu newline
       private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID, // Înlocuiește \\n cu newline
-      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"), // Înlocuiește \\n cu newline
+      private_key: process.env.GOOGLE_PRIVATE_KEY.trim().replace(/\\n/g, "\n"),
       client_email: process.env.GOOGLE_CLIENT_EMAIL,
       client_id: process.env.GOOGLE_CLIENT_ID,
       auth_uri: process.env.GOOGLE_AUTH_URI,
