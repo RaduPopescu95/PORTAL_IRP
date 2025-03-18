@@ -339,9 +339,9 @@ const MyMapView = ({
           bottom: "90%",
           left: "10px",
           padding: "12px",
-          backgroundColor: "#ffffff", // Fundal alb
+          backgroundColor: "#ffffff", 
           border: "none",
-          borderRadius: "50%", // Formă circulară
+          borderRadius: "50%",
           cursor: "pointer",
           zIndex: 1000,
           display: "flex",

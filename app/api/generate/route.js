@@ -9,7 +9,7 @@ try {
   auth = new google.auth.GoogleAuth({
     credentials: {
       type: process.env.GOOGLE_TYPE,
-      private_id: process.env.GOOGLE_PROJECT_ID, // Înlocuiește \\n cu newline
+      project_id: process.env.GOOGLE_PROJECT_ID, // Înlocuiește \\n cu newline
       private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID, // Înlocuiește \\n cu newline
       private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"), // Înlocuiește \\n cu newline
       client_email: process.env.GOOGLE_CLIENT_EMAIL,
