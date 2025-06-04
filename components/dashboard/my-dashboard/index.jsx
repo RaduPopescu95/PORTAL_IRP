@@ -1,3 +1,5 @@
+"use client";
+
 import Header from "../../common/header/dashboard/Header";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenu";
 import MobileMenu from "../../common/header/MobileMenu";
@@ -5,7 +7,6 @@ import Activities from "./Activities";
 import AllStatistics from "./AllStatistics";
 import HelloUser from "./HelloUser";
 import StatisticsChart from "./StatisticsChart";
-import PWAStatus from "../../common/PWAStatus";
 
 const index = () => {
   return (
