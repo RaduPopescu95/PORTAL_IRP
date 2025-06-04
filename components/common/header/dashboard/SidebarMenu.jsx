@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { authentication } from "@/firebase";
 import ReactDOM from "react-dom";
 import React from "react";
+import PWAStatus from "@/components/common/PWAStatus";
 
 // Componenta de overlay care acoperă tot ecranul
 const LoadingOverlay = () => {
@@ -66,130 +67,79 @@ const SidebarMenu = ({ partenerId }) => {
   }, []);
 
   // Dacă încă se încarcă datele, afișăm overlay-ul de loading
-
-
-  // Dacă nu există userul, redirecționăm la signin
-  if (!currentUser) {
-    router.push("/signin");
-   
-  }
-
-  if (!isAdmin && !isPowerAdmin) {
-    router.push("/harta");
-   
-  }
-  if (loading && !isAdmin && !isPowerAdmin &&  !currentUser) {
+  if (loading) {
     return <LoadingOverlay />;
   }
+
   return (
     <>
       <ul className="sidebar-menu">
-        <li className="sidebar_header header"></li>
+        <li className="sidebar_header header">
+          <div style={{ padding: "10px 15px", borderBottom: "1px solid #e9ecef" }}>
+            <PWAStatus />
+          </div>
+        </li>
         <li className="title">
           <ul>
             {/* Meniu vizibil oricărui utilizator logat */}
+   
+
             <li
               className={`treeview ${
-                isSinglePageActive("/harta", pathname) ? "active" : ""
+                isSinglePageActive("/", pathname) ? "active" : ""
               }`}
             >
-              <Link href="/harta">
-                <i className="flaticon-maps-and-flags"></i>
-                <span>Harta</span>
+              <Link href="/panou-principal">
+                <i className="flaticon-layers"></i>
+                <span>Panou Principal</span>
               </Link>
             </li>
 
-            {(isAdmin || isPowerAdmin) && (
-              <>
-                <li
-                  className={`treeview ${
-                    isSinglePageActive("/", pathname) ? "active" : ""
-                  }`}
-                >
-                  <Link href="/panou-principal">
-                    <i className="flaticon-layers"></i>
-                    <span>Panou Principal</span>
-                  </Link>
-                </li>
-              </>
-            )}
-
-            {/* Link-uri afișate exclusiv pentru powerAdmin */}
-            {currentUser.uid === "KWrwl5GFFjc5700GNgze5ki6Jsp1" && (
-              <>
-                <li
-                  className={`treeview ${
-                    isSinglePageActive("/creaza-BICP", pathname) ? "active" : ""
-                  }`}
-                >
-                  <Link href="/creaza-BICP">
-                    <i className="flaticon-plus"></i>
-                    <span>Creaza BICP</span>
-                  </Link>
-                </li>
-                <li
-                  className={`treeview ${
-                    isSinglePageActive("/lista-BICP", pathname) ? "active" : ""
-                  }`}
-                >
-                  <Link href="/lista-BICP">
-                    <i className="flaticon-layers"></i>
-                    <span>Lista BICP</span>
-                  </Link>
-                </li>
-                <li
-                  className={`treeview ${
-                    isSinglePageActive("/creaza-acreditare", pathname)
-                      ? "active"
-                      : ""
-                  }`}
-                >
-                  <Link href="/creaza-acreditare">
-                    <i className="flaticon-plus"></i>
-                    <span>Creaza acreditare</span>
-                  </Link>
-                </li>
-                <li
-                  className={`treeview ${
-                    isSinglePageActive("/lista-acreditari", pathname)
-                      ? "active"
-                      : ""
-                  }`}
-                >
-                  <Link href="/lista-acreditari">
-                    <i className="flaticon-layers"></i>
-                    <span>Lista Acreditari</span>
-                  </Link>
-                </li>
-                <li
-                  className={`treeview ${
-                    isSinglePageActive(
-                      "/adauga-solicitare-verbala",
-                      pathname
-                    )
-                      ? "active"
-                      : ""
-                  }`}
-                >
-                  <Link href="/adauga-solicitare-verbala">
-                    <i className="flaticon-plus"></i>
-                    <span>Adauga solicitare verbala</span>
-                  </Link>
-                </li>
-                <li
-                  className={`treeview ${
-                    isSinglePageActive("/lista-solicitari-verbale", pathname)
-                      ? "active"
-                      : ""
-                  }`}
-                >
-                  <Link href="/lista-solicitari-verbale">
-                    <i className="flaticon-layers"></i>
-                    <span>Lista solicitari verbale</span>
-                  </Link>
-                </li>
-              </>
-            )}
+            <li
+              className={`treeview ${
+                isSinglePageActive("/creaza-BICP", pathname) ? "active" : ""
+              }`}
+            >
+              <Link href="/creaza-BICP">
+                <i className="flaticon-plus"></i>
+                <span>Creaza BICP</span>
+              </Link>
+            </li>
+            <li
+              className={`treeview ${
+                isSinglePageActive("/lista-BICP", pathname) ? "active" : ""
+              }`}
+            >
+              <Link href="/lista-BICP">
+                <i className="flaticon-layers"></i>
+                <span>Lista BICP</span>
+              </Link>
+            </li>
+            <li
+              className={`treeview ${
+                isSinglePageActive("/creaza-acreditare", pathname)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <Link href="/creaza-acreditare">
+                <i className="flaticon-plus"></i>
+                <span>Creaza acreditare</span>
+              </Link>
+            </li>
+            <li
+              className={`treeview ${
+                isSinglePageActive("/lista-acreditari", pathname)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <Link href="/lista-acreditari">
+                <i className="flaticon-layers"></i>
+                <span>Lista Acreditari</span>
+              </Link>
+            </li>
+       
 
             {/* Meniu pentru cont (logout etc.) */}
             {manageAccount.map((item) => (

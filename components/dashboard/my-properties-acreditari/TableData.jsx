@@ -3,8 +3,9 @@
 import { useState } from "react";
 import DeleteDialog from "@/components/common/dialogs/DeleteDialog";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { deleteFirestoreItem } from "@/utils/firestoreUtils";
 
-const TableData = ({ oferte, an }) => {
+const TableData = ({ oferte, an, onRefresh }) => {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -31,9 +32,22 @@ const TableData = ({ oferte, an }) => {
   const handleConfirmDelete = async () => {
     setIsLoading(true);
     try {
+      console.log("Deleting accreditation item with ID:", selectedItem.id);
+
+      // Șterge documentul din colecția Acreditari
+      await deleteFirestoreItem("Acreditari", selectedItem.id);
+
       setShowModal(false);
+      
+      // Reîmprospătează lista
+      if (onRefresh) {
+        onRefresh();
+      } else {
+        window.location.reload();
+      }
     } catch (error) {
-      console.error("Error deleting item:", error);
+      console.error("Error deleting accreditation item:", error);
+      alert("Eroare la ștergerea acreditării!");
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +59,7 @@ const TableData = ({ oferte, an }) => {
 
   const theadContent = isMobile
     ? ["Număr", "Data", "Linkuri"]
-    : ["Număr", "Data", "Titlu", "Linkuri", "Copiază conținut"];
+    : ["Număr", "Data", "Titlu", "Linkuri", "Copiază conținut", "Șterge"];
 
   const tbodyContent = oferte.map((item) => (
     <tr key={item.id}>
@@ -69,7 +83,7 @@ const TableData = ({ oferte, an }) => {
       {/* Linkuri */}
       <td>
         {item.links.map((link, index) => (
-          <div key={index}>
+          <div key={index} style={{ marginBottom: "5px" }}>
             {/* Link pentru descărcare Word */}
             <a href={link.wordLink} target="_blank" rel="noopener noreferrer">
               📄 {link.title} (Word)
@@ -106,6 +120,19 @@ const TableData = ({ oferte, an }) => {
               </button>
             </li>
           </ul>
+        </td>
+      )}
+
+      {/* Buton de ștergere */}
+      {!isMobile && (
+        <td>
+          <button 
+            className="btn btn-danger btn-sm"
+            onClick={() => handleDeleteClick(item)}
+            title="Șterge acreditare"
+          >
+            🗑️ Șterge
+          </button>
         </td>
       )}
     </tr>

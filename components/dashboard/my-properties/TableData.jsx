@@ -7,6 +7,7 @@ import Link from "next/link";
 import {
   handleDeleteFirestoreSubcollectionData,
   handleUpdateFirestoreSubcollection,
+  deleteFirestoreItem,
 } from "@/utils/firestoreUtils";
 import { useAuth } from "@/context/AuthContext";
 import DeleteDialog from "@/components/common/dialogs/DeleteDialog";
@@ -25,7 +26,7 @@ const styles = {
   },
 };
 
-const TableData = ({ oferte }) => {
+const TableData = ({ oferte, onRefresh }) => {
   console.log("TableData oferte:", oferte); // Check what is received exactly
 
   const [showModal, setShowModal] = useState(false);
@@ -52,35 +53,29 @@ const TableData = ({ oferte }) => {
     setShowModal(false);
   };
 
-  // Logica de ștergere a elementului
-
+  // Logica de ștergere a elementului din Firestore
   const handleConfirmDelete = async () => {
     setIsLoading(true);
 
     try {
-      console.log("Deleting item with ID:", selectedItem);
+      console.log("Deleting BICP item with ID:", selectedItem.id);
 
-      await handleDeleteFirestoreSubcollectionData(
-        `Users/${selectedItem.collectionId}/Oferte/${selectedItem.documentId}`,
-        true,
-        `Users/${selectedItem.collectionId}/Oferte`,
-        selectedItem
-      );
+      // Șterge documentul din colecția Comunicate
+      await deleteFirestoreItem("Comunicate", selectedItem.id);
 
-      if (selectedItem.imagineOferta) {
-        await deleteImage("PozeOferte", selectedItem.imagineOferta.fileName);
-      }
-
-      // Aici adaugi logica pentru a șterge elementul din sursa ta de date
       setShowModal(false); // Închide modalul după ștergere
-
-      // Dacă dorești să aștepți până când router-ul se reîmprospătează înainte de a seta loading-ul la false
+      
+      // Reîmprospătează lista
+      if (onRefresh) {
+        onRefresh();
+      } else {
+        window.location.reload();
+      }
     } catch (error) {
-      console.error("Error deleting item:", error);
-      // Aici poți adăuga logica de afișare a unui mesaj de eroare pentru utilizator, dacă este cazul
+      console.error("Error deleting BICP item:", error);
+      alert("Eroare la ștergerea documentului!");
     } finally {
-      window.location.reload();
-      setIsLoading(false); // Setează isLoading la false indiferent dacă ștergerea a reușit sau a eșuat
+      setIsLoading(false);
     }
   };
 
@@ -108,6 +103,7 @@ const TableData = ({ oferte }) => {
       "Data",
       "Actiune",
       "Copiaza continut",
+      "Șterge",
     ];
   }
 
@@ -137,32 +133,45 @@ const TableData = ({ oferte }) => {
 
       <td>
         <ul className="">
-          <li title="Edit">
-            <a href={item.wordLink}>WORD</a>
+          <li title="Download Word">
+            <a href={item.wordLink} target="_blank" rel="noopener noreferrer">WORD</a>
           </li>
-          <li title="Edit">
-            <a href={item.pdfLink}>PDF</a>
+          <li title="Download PDF">
+            <a href={item.pdfLink} target="_blank" rel="noopener noreferrer">PDF</a>
           </li>
-
-          {/* End li */}
         </ul>
       </td>
       {/* End td */}
-      <td>
-        <ul className="">
-          <li title="Edit">
-            <button onClick={() => copyToClipboard(item.titlu)}>
-              Copiaza titlu
-            </button>
-          </li>
-          <li title="Edit">
-            <button onClick={() => copyToClipboard(item.comunicat)}>
-              Copiaza continut
-            </button>
-          </li>
-          {/* End li */}
-        </ul>
-      </td>
+      
+      {!isMobile && (
+        <td>
+          <ul className="">
+            <li title="Copy Title">
+              <button onClick={() => copyToClipboard(item.titlu)}>
+                Copiaza titlu
+              </button>
+            </li>
+            <li title="Copy Content">
+              <button onClick={() => copyToClipboard(item.comunicat)}>
+                Copiaza continut
+              </button>
+            </li>
+          </ul>
+        </td>
+      )}
+      {/* End td */}
+
+      {!isMobile && (
+        <td>
+          <button 
+            className="btn btn-danger btn-sm"
+            onClick={() => handleDeleteClick(item)}
+            title="Șterge document"
+          >
+            🗑️ Șterge
+          </button>
+        </td>
+      )}
       {/* End td */}
     </tr>
   ));

@@ -1,0 +1,18 @@
+<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="96" cy="96" r="88" fill="#007bff" stroke="#ffffff" stroke-width="8"/>
+  
+  <!-- IRP Text -->
+  <text x="96" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="28" fill="white">IRP</text>
+  
+  <!-- Document icon -->
+  <rect x="70" y="105" width="32" height="40" rx="2" fill="white" opacity="0.9"/>
+  <rect x="74" y="110" width="24" height="2" fill="#007bff"/>
+  <rect x="74" y="115" width="20" height="2" fill="#007bff"/>
+  <rect x="74" y="120" width="24" height="2" fill="#007bff"/>
+  <rect x="74" y="125" width="16" height="2" fill="#007bff"/>
+  
+  <!-- Plus icon -->
+  <rect x="108" y="115" width="12" height="2" fill="white"/>
+  <rect x="113" y="110" width="2" height="12" fill="white"/>
+</svg> 

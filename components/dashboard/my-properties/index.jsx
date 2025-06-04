@@ -29,13 +29,137 @@ import { useDataWithPaginationAndSearch } from "@/hooks/useDataWithPaginationAnd
 
 const index = ({ oferte, an }) => {
   console.log("oferte....", oferte);
+  const [originalData, setOriginalData] = useState(oferte || []);
+  const [filteredData, setFilteredData] = useState(oferte || []);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentFilters, setCurrentFilters] = useState({});
+
   const {
     currentData,
     setCurrentPage,
     totalPages,
-    setSearchTerm,
+    setSearchTerm: setPaginationSearchTerm,
     currentPage,
-  } = useDataWithPaginationAndSearch(oferte, "titlu");
+  } = useDataWithPaginationAndSearch(filteredData, "titlu");
+
+  // Funcție pentru aplicarea filtrelor
+  const applyFilters = (data, filters, search) => {
+    let filtered = [...data];
+
+    // Aplicare search
+    if (search) {
+      filtered = filtered.filter(item => 
+        item.titlu?.toLowerCase().includes(search.toLowerCase()) ||
+        item.comunicat?.toLowerCase().includes(search.toLowerCase()) ||
+        item.numeAfisare?.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Aplicare filtru tip document
+    if (filters.tipDocument) {
+      filtered = filtered.filter(item => item.nume === filters.tipDocument);
+    }
+
+    // Aplicare filtru semnatar
+    if (filters.semnatar) {
+      filtered = filtered.filter(item => item.numeSemnatar === filters.semnatar);
+    }
+
+    // Aplicare filtru data start
+    if (filters.dataStart) {
+      filtered = filtered.filter(item => {
+        const itemDate = convertDateFormat(item.data);
+        return itemDate >= filters.dataStart;
+      });
+    }
+
+    // Aplicare filtru data end
+    if (filters.dataEnd) {
+      filtered = filtered.filter(item => {
+        const itemDate = convertDateFormat(item.data);
+        return itemDate <= filters.dataEnd;
+      });
+    }
+
+    // Aplicare filtru număr minim
+    if (filters.numarMin) {
+      filtered = filtered.filter(item => 
+        parseInt(item.numar) >= parseInt(filters.numarMin)
+      );
+    }
+
+    // Aplicare filtru număr maxim
+    if (filters.numarMax) {
+      filtered = filtered.filter(item => 
+        parseInt(item.numar) <= parseInt(filters.numarMax)
+      );
+    }
+
+    // Aplicare sortare
+    if (filters.sortBy) {
+      filtered.sort((a, b) => {
+        let aVal, bVal;
+        
+        switch (filters.sortBy) {
+          case 'data':
+            aVal = convertDateFormat(a.data);
+            bVal = convertDateFormat(b.data);
+            break;
+          case 'numar':
+            aVal = parseInt(a.numar);
+            bVal = parseInt(b.numar);
+            break;
+          case 'numarComunicat':
+            aVal = parseInt(a.numarComunicat);
+            bVal = parseInt(b.numarComunicat);
+            break;
+          case 'titlu':
+            aVal = a.titlu?.toLowerCase() || '';
+            bVal = b.titlu?.toLowerCase() || '';
+            break;
+          case 'nume':
+            aVal = a.nume?.toLowerCase() || '';
+            bVal = b.nume?.toLowerCase() || '';
+            break;
+          default:
+            return 0;
+        }
+
+        if (filters.sortOrder === 'asc') {
+          return aVal > bVal ? 1 : -1;
+        } else {
+          return aVal < bVal ? 1 : -1;
+        }
+      });
+    }
+
+    return filtered;
+  };
+
+  // Funcție pentru convertirea datei din formatul "dd/mm/yyyy" în "yyyy-mm-dd"
+  const convertDateFormat = (dateString) => {
+    if (!dateString) return '';
+    const [day, month, year] = dateString.split('/');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  };
+
+  // Effect pentru aplicarea filtrelor când se schimbă filtrele sau search-ul
+  useEffect(() => {
+    const filtered = applyFilters(originalData, currentFilters, searchTerm);
+    setFilteredData(filtered);
+    setPaginationSearchTerm(''); // Reset pagination search when filters change
+    setCurrentPage(1); // Reset to first page
+  }, [originalData, currentFilters, searchTerm]);
+
+  // Handler pentru schimbarea filtrelor
+  const handleFilterChange = (filters) => {
+    setCurrentFilters(filters);
+  };
+
+  // Handler pentru search
+  const handleSearchChange = (search) => {
+    setSearchTerm(search);
+  };
 
   return (
     <>
@@ -84,6 +208,7 @@ const index = ({ oferte, an }) => {
                 <div className="col-lg-4 col-xl-4 mb10">
                   <div className="breadcrumb_content style2 mb30-991">
                     <h2 className="breadcrumb_title">Lista BI/CP {an}</h2>
+                    <p>Total: {filteredData.length} documente</p>
                   </div>
                 </div>
                 {/* End .col */}
@@ -93,19 +218,20 @@ const index = ({ oferte, an }) => {
                     <ul className="mb0">
                       <li className="list-inline-item">
                         <div className="candidate_revew_search_box course fn-520">
-                          <SearchBox onSearch={setSearchTerm} />
+                          <SearchBox onSearch={handleSearchChange} />
                         </div>
                       </li>
-                      {/* End li */}
-
-                      {/* <li className="list-inline-item">
-                        <Filtering />
-                      </li> */}
                       {/* End li */}
                     </ul>
                   </div>
                 </div>
                 {/* End .col */}
+
+                {/* Filtering Section */}
+                <div className="col-lg-12 mb-4">
+                  <Filtering onFilterChange={handleFilterChange} />
+                </div>
+                {/* End Filtering */}
 
                 <div className="col-lg-12">
                   <div className="my_dashboard_review mb40">

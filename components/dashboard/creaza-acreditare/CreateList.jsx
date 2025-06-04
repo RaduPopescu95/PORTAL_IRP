@@ -225,7 +225,7 @@ const CreateList = ({ oferta }) => {
           numar: nextNumar,
         });
         console.log(`Updated ultimulNumarAcreditare to ${nextNumar}`);
-        setNumar(nextNumar); // Actualizează local numărul
+        setNumar(nextNumar.toString()); // Actualizează local numărul
       } else {
         console.error("Error from API:", data.error);
         throw new Error(data.error || "Unknown error");
@@ -304,6 +304,7 @@ const CreateList = ({ oferta }) => {
             className="form-control"
             id="propertyTitle"
             value={numar}
+            onChange={(e) => setNumar(e.target.value)}
           />
         </div>
       </div>

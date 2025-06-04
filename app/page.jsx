@@ -13,8 +13,8 @@ import MapContainer from "./(admin-irp)/harta/page";
 export default function Home() {
   return (
     <Wrapper>
-      {/* <PanouPartener /> */}
-      <MapContainer/>
+      <PanouPartener />
+      {/* <MapContainer/> */}
     </Wrapper>
   );
 }

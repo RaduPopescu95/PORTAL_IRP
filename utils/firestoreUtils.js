@@ -16,6 +16,8 @@ import {
   collectionGroup,
   startAt,
   getCountFromServer,
+  orderBy,
+  limit,
 } from "firebase/firestore";
 import { authentication, db } from "../firebase";
 import { handleDeleteAccount } from "./authUtils";
@@ -791,12 +793,23 @@ export async function getLocalitatiWithUserCounts() {
 //-------- PAGINATION -----
 
 const handleGetFirestorePaginated = async (pageSize, collectionPath) => {
-  const ref = collection(db, collectionPath);
-  let pageQuery;
+  console.log("get paginated...", pageSize, collectionPath);
 
-  pageQuery = query(ref, orderBy("firstUploadDate", "desc"), limit(pageSize));
-  setLastVisible(null);
-  setFirstVisible(null);
+  const first = query(collection(db, collectionPath), limit(pageSize));
+
+  return first;
+};
+
+// Funcție pentru ștergerea unui document din Firestore
+export const deleteFirestoreItem = async (collectionName, docId) => {
+  try {
+    const docRef = doc(db, collectionName, docId);
+    await deleteDoc(docRef);
+    console.log(`Document ${docId} deleted successfully from ${collectionName}`);
+  } catch (error) {
+    console.error("Error deleting document:", error);
+    throw error;
+  }
 };
 
 //-------- PAGINATION -----
