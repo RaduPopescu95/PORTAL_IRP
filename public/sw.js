@@ -84,6 +84,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip Firestore requests - nu le cache-am pentru date fresh
+  if (url.hostname.includes('firestore.googleapis.com') || 
+      url.hostname.includes('firebase.googleapis.com') ||
+      url.pathname.includes('/firestore/') ||
+      url.pathname.includes('/api/generateAcreditari') ||
+      url.pathname.includes('/api/generate')) {
+    console.log('Service Worker: Skipping cache for Firestore request:', url.href);
+    return;
+  }
+
   // Skip requests pentru same-origin care nu sunt GET
   if (request.method !== 'GET') {
     return;
@@ -108,7 +118,7 @@ self.addEventListener('fetch', (event) => {
             // Clone response pentru cache
             const responseClone = networkResponse.clone();
 
-            // Cache resurse dinamice
+            // Cache resurse dinamice (dar nu date Firestore)
             if (shouldCacheDynamically(request.url)) {
               caches.open(DYNAMIC_CACHE_NAME)
                 .then(cache => {
@@ -146,6 +156,16 @@ self.addEventListener('fetch', (event) => {
 
 // Helper functions
 function shouldCacheDynamically(url) {
+  // Nu cache-ăm requests către Firestore sau API-uri de date
+  if (url.includes('firestore.googleapis.com') || 
+      url.includes('firebase.googleapis.com') ||
+      url.includes('/api/generate') ||
+      url.includes('/api/') ||
+      url.includes('_next/static/chunks/app/')) {
+    return false;
+  }
+
+  // Cache-ăm doar resurse statice
   return DYNAMIC_CACHE_PATTERNS.some(pattern => pattern.test(url));
 }
 

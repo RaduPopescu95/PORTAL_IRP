@@ -33,6 +33,13 @@ const CreateList = ({ oferta }) => {
     setAlert({ message: "", type: "" });
   };
 
+  // Funcție pentru conversie dată din YYYY-MM-DD la DD/MM/YYYY
+  const convertDateForDisplay = (dateString) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
   const [timeoutId, setTimeoutId] = useState(null);
 
   // Caută datele jurnalistului în funcție de număr legitimație
@@ -140,7 +147,7 @@ const CreateList = ({ oferta }) => {
         templateId: templateIdAdresaAcreditare,
         variables: {
           numar,
-          data: dataCurenta,
+          data: convertDateForDisplay(dataCurenta),
           numeRedactie: numeRedactie,
           adresaRedactie: adresaRedactie,
           numeAcreditareDinAdresa: numeJurnalistAdresa,
@@ -152,7 +159,7 @@ const CreateList = ({ oferta }) => {
         templateId: templateIdAcreditare,
         variables: {
           numar,
-          data: dataCurenta,
+          data: convertDateForDisplay(dataCurenta),
           numeAcreditare: numeJurnalistAcreditare,
           numarLegitimatie: numarLegitimatie,
           numeRedactie: numeRedactie,
@@ -163,7 +170,7 @@ const CreateList = ({ oferta }) => {
         templateId: templateIdAcreditarePDF, // DOAR acest document va avea și PDF
         variables: {
           numar,
-          data: dataCurenta,
+          data: convertDateForDisplay(dataCurenta),
           numeAcreditare: numeJurnalistAcreditare,
           numarLegitimatie: numarLegitimatie,
           numeRedactie: numeRedactie,
@@ -209,7 +216,7 @@ const CreateList = ({ oferta }) => {
         // Salvează documentele generate în Firestore
         await setFirestoreItem("Acreditari", `Acreditare-${numar}`, {
           numar,
-          data: dataCurenta,
+          data: convertDateForDisplay(dataCurenta),
           links: data.links.map((doc) => ({
             title: doc.title,
             wordLink: doc.wordLink,
@@ -244,7 +251,7 @@ const CreateList = ({ oferta }) => {
     const day = String(today.getDate()).padStart(2, "0");
     const month = String(today.getMonth() + 1).padStart(2, "0"); // luna începe de la 0
     const year = today.getFullYear();
-    setDataCurenta(`${day}/${month}/${year}`); // setează formatul dorit aici
+    setDataCurenta(`${year}-${month}-${day}`); // Format YYYY-MM-DD pentru input date
 
     // Restul codului din useEffect...
   }, []);
@@ -313,10 +320,11 @@ const CreateList = ({ oferta }) => {
         <div className="my_profile_setting_input form-group">
           <label htmlFor="propertyTitle">Data</label>
           <input
-            type="text"
+            type="date"
             className="form-control"
             id="propertyTitle"
             value={dataCurenta}
+            onChange={(e) => setDataCurenta(e.target.value)}
           />
         </div>
       </div>

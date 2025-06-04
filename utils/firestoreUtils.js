@@ -28,6 +28,9 @@ export const userLocation = `Users/${
   auth.currentUser ? auth.currentUser.uid : ""
 }`; // Calea către document
 
+// Cache bypass options - force server data
+const NO_CACHE_OPTIONS = { source: 'server' };
+
 export const getFirestoreItemsByCondition = async (
   collectionName,
   field,
@@ -35,7 +38,8 @@ export const getFirestoreItemsByCondition = async (
 ) => {
   try {
     const q = query(collection(db, collectionName), where(field, "==", value)); // Query direct în Firestore
-    const querySnapshot = await getDocs(q);
+    // Force fresh data from server, bypass cache
+    const querySnapshot = await getDocs(q, NO_CACHE_OPTIONS);
 
     if (!querySnapshot.empty) {
       const results = [];
@@ -55,7 +59,8 @@ export const getFirestoreItemsByCondition = async (
 
 export const getFirestoreItem = async (collection, docId) => {
   const docRef = doc(db, collection, docId);
-  const docSnap = await getDoc(docRef);
+  // Force fresh data from server, bypass cache
+  const docSnap = await getDoc(docRef, NO_CACHE_OPTIONS);
   if (docSnap.exists()) {
     return docSnap.data();
   } else {
@@ -279,7 +284,8 @@ export const handleDeleteFirestoreAccount = async (
 //get firestore docs from a collection
 export const handleGetFirestore = async (location, sortBy = null) => {
   let arr = []; // Specificați tipul de obiecte pe care îl conține matricea
-  const querySnapshot = await getDocs(collection(db, location));
+  // Force fresh data from server, bypass cache
+  const querySnapshot = await getDocs(collection(db, location), NO_CACHE_OPTIONS);
   querySnapshot.forEach((doc) => {
     // doc.data() is never undefined for query doc snapshots
     // console.log(doc.id, ` ${location} => `, doc.data());
@@ -421,8 +427,8 @@ export const handleGetSubcollections = async (subcollection, sortBy = null) => {
     // Creează o interogare pentru grupul de colecții "Localitati"
     const q = query(collectionGroup(db, subcollection));
 
-    // Execută interogarea și preia documentele
-    const querySnapshot = await getDocs(q);
+    // Execută interogarea și preia documentele - force fresh data from server
+    const querySnapshot = await getDocs(q, NO_CACHE_OPTIONS);
 
     // Crează un array pentru a stoca rezultatele
     const docs = [];
@@ -463,7 +469,8 @@ export const handleGetFirestoreSingleArrayData = async (location) => {
   console.log("Start...take from firestore array single", location);
   try {
     let arr = []; // Specificați tipul de obiecte pe care îl conține matricea
-    const querySnapshot = await getDocs(collection(db, location));
+    // Force fresh data from server, bypass cache
+    const querySnapshot = await getDocs(collection(db, location), NO_CACHE_OPTIONS);
     querySnapshot.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots
       console.log(doc.id, ` ${location} => `, doc.data());
@@ -498,7 +505,8 @@ export const handleQueryFirestore = async (
 
   const q = query(...conditions);
 
-  const querySnapshot = await getDocs(q);
+  // Force fresh data from server, bypass cache
+  const querySnapshot = await getDocs(q, NO_CACHE_OPTIONS);
   querySnapshot.forEach((doc) => {
     // doc.data() is never undefined for query doc snapshots
 
@@ -530,7 +538,8 @@ export const handleQueryFirestoreSubcollection = async (
     );
   }
 
-  const querySnapshot = await getDocs(localitatiRef);
+  // Force fresh data from server, bypass cache
+  const querySnapshot = await getDocs(localitatiRef, NO_CACHE_OPTIONS);
   querySnapshot.forEach((doc) => {
     arr.push(doc.data());
   });

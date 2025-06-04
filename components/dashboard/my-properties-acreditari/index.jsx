@@ -34,6 +34,7 @@ const index = ({ oferte, an }) => {
   const [filteredData, setFilteredData] = useState(oferte || []);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentFilters, setCurrentFilters] = useState({});
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
 
   const {
     currentData,
@@ -42,6 +43,13 @@ const index = ({ oferte, an }) => {
     setSearchTerm: setPaginationSearchTerm,
     currentPage,
   } = useDataWithPaginationAndSearchAcreditari(filteredData, "numar");
+
+  // Funcție pentru refresh forțat fără cache
+  const forceRefresh = () => {
+    setLastRefresh(Date.now());
+    // Force page reload to get fresh data from server
+    window.location.reload();
+  };
 
   // Funcție pentru aplicarea filtrelor
   const applyFilters = (data, filters, search) => {
@@ -190,6 +198,13 @@ const index = ({ oferte, an }) => {
                   <div className="breadcrumb_content style2 mb30-991">
                     <h2 className="breadcrumb_title">Lista Acreditari {an}</h2>
                     <p>Total: {filteredData.length} acreditări</p>
+                    <button 
+                      onClick={forceRefresh}
+                      className="btn btn-sm btn-outline-primary mt-2"
+                      title="Reîmprospătează datele"
+                    >
+                      🔄 Actualizează
+                    </button>
                   </div>
                 </div>
                 {/* End .col */}

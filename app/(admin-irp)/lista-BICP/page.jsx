@@ -20,13 +20,13 @@ const fetchItems = async (page) => {
 
     if (!pageQuery) return [];
 
-    // Obține documentele din interogare
-    const documentSnapshots = await getDocs(pageQuery);
+    // Obține documentele din interogare - force fresh data from server
+    const documentSnapshots = await getDocs(pageQuery, { source: 'server' });
     const newItems = documentSnapshots.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    console.log("newItems....", newItems[0].data);
+    console.log("newItems....", newItems[0]?.data);
     const groupedByYear = newItems.reduce((acc, item) => {
       const year = item.data.split("/")[2];
       if (!acc[year]) {
@@ -35,7 +35,7 @@ const fetchItems = async (page) => {
       acc[year].push(item);
       return acc;
     }, {});
-    console.log("groupedByYear....", groupedByYear[2025].length);
+    console.log("groupedByYear....", groupedByYear[2025]?.length);
 
     return groupedByYear;
   } catch (e) {

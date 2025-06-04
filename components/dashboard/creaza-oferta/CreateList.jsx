@@ -41,6 +41,13 @@ const CreateList = ({ oferta }) => {
     setAlert({ message: "", type: "" });
   };
 
+  // Funcție pentru conversie dată din YYYY-MM-DD la DD/MM/YYYY
+  const convertDateForDisplay = (dateString) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
   const [menuVisible, setMenuVisible] = useState(false);
 
   const mobileStyles = getMobileStyles();
@@ -107,7 +114,7 @@ const CreateList = ({ oferta }) => {
           templateId: templateId,
           newTitle: titlu,
           variables: {
-            data: dataCurenta,
+            data: convertDateForDisplay(dataCurenta),
             numar: numar,
             titlu: titlu,
             nume: selectedItem,
@@ -171,7 +178,7 @@ const CreateList = ({ oferta }) => {
       const documentData = {
         numar: numar,
         numarComunicat: numarComunicat,
-        data: dataCurenta,
+        data: convertDateForDisplay(dataCurenta),
         nume: selectedItem,
         titlu: titlu,
         comunicat: comunicat,
@@ -217,7 +224,7 @@ const CreateList = ({ oferta }) => {
     const day = String(today.getDate()).padStart(2, "0");
     const month = String(today.getMonth() + 1).padStart(2, "0"); // luna începe de la 0
     const year = today.getFullYear();
-    setDataCurenta(`${day}/${month}/${year}`); // setează formatul dorit aici
+    setDataCurenta(`${year}-${month}-${day}`); // Format YYYY-MM-DD pentru input date
 
     // Restul codului din useEffect...
   }, []);
@@ -327,15 +334,14 @@ const CreateList = ({ oferta }) => {
               Data
             </label>
             <input
-              type="text"
+              type="date"
               className="form-control"
               id="data"
               value={dataCurenta}
-              readOnly
+              onChange={(e) => setDataCurenta(e.target.value)}
               style={{
                 ...mobileStyles.mobileInput,
-                backgroundColor: '#f8f9fa',
-                cursor: 'not-allowed',
+                fontSize: '16px',
               }}
             />
           </div>

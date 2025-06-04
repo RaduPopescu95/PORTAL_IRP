@@ -18,7 +18,8 @@ const fetchItems = async () => {
     // Interogare pentru ordonare descrescătoare după "numar"
     const pageQuery = query(ref, orderBy("numar", "desc"));
 
-    const documentSnapshots = await getDocs(pageQuery);
+    // Force fresh data from server, bypass cache
+    const documentSnapshots = await getDocs(pageQuery, { source: 'server' });
     const newItems = documentSnapshots.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
