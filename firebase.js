@@ -4,13 +4,12 @@ import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBRBTW2_E88mKdOYGjI4OTHhHE1xaHq3rw",
-  authDomain: "db-isudeansul.firebaseapp.com",
-  projectId: "db-isudeansul",
-  storageBucket: "db-isudeansul.appspot.com",
-  messagingSenderId: "1013015567056",
-  appId: "1:1013015567056:web:0a31a3b0b1d4e0ab8ed3cd",
-  measurementId: "G-VN6T6XFXQL"
+  apiKey: "AIzaSyAvibfeWKkrnvxZqotnt6htYkCMjkE7frc",
+  authDomain: "isudb-e349d.firebaseapp.com",
+  projectId: "isudb-e349d",
+  storageBucket: "isudb-e349d.appspot.com",
+  messagingSenderId: "367957621287",
+  appId: "1:367957621287:web:1b41735dd05b93f5236c02",
 };
 
 // Initialize Firebase
