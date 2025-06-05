@@ -1,62 +1,86 @@
 import dynamic from "next/dynamic";
 import MyProperties from "@/components/dashboard/my-properties-acreditari";
 import { unstable_noStore as noStore } from "next/cache";
-import { authentication, db } from "@/firebase";
+import { authentication, db, FORCE_SERVER_OPTIONS } from "@/firebase";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 
 export const metadata = {
   title: "Portal IRP - Lista Acreditări",
-  description: "Lista Acreditărilor de presă",
+  description: "Lista Acreditări Jurnaliști",
 };
+
+// Force absolutely no caching at all levels
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 const fetchItems = async () => {
   try {
-    console.log("Fetching Acreditari items from Firestore...");
+    // Add unique timestamp to bypass any potential caches
+    const timestamp = Date.now();
+    const uniqueId = Math.random().toString(36).substring(7);
+    
+    console.log(`[${timestamp}] Fetching Acreditari items from Firestore - NO CACHE - ID: ${uniqueId}`);
+    
     const collectionPath = "Acreditari";
     const ref = collection(db, collectionPath);
 
-    // Interogare pentru ordonare descrescătoare după "numar"
-    const pageQuery = query(ref, orderBy("numar", "desc"));
+    // Creează o interogare pentru a ordona documentele descrescător după "numarInregistrareAcreditare"
+    const pageQuery = query(ref, orderBy("numarInregistrareAcreditare", "desc"));
 
-    // Force fresh data from server, bypass cache
-    const documentSnapshots = await getDocs(pageQuery, { source: 'server' });
+    // FORCE server data - absolutely no cache
+    const forceServerOptions = {
+      ...FORCE_SERVER_OPTIONS,
+      timestamp: timestamp,
+      bypassCache: true,
+      _uniqueId: uniqueId
+    };
+    
+    console.log(`[${timestamp}] Executing acreditari query with force server options:`, forceServerOptions);
+    
+    const documentSnapshots = await getDocs(pageQuery, forceServerOptions);
     const newItems = documentSnapshots.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
+      _timestamp: timestamp,
+      _uniqueId: uniqueId,
+      _serverFetch: true
     }));
-
-    console.log(`Fetched ${newItems.length} Acreditari items`);
+    
+    console.log(`[${timestamp}] Fetched ${newItems.length} Acreditari items directly from server`);
     
     if (newItems.length === 0) {
-      console.log("No Acreditari items found");
+      console.log(`[${timestamp}] No Acreditari items found in server response`);
       return {};
     }
 
-    // Grupare pe ani cu handling mai sigur
+    console.log(`[${timestamp}] Sample acreditari item from server:`, newItems[0]);
+    
+    // Grupare pe ani
     const groupedByYear = newItems.reduce((acc, item) => {
-      // Verifică dacă item.data există și are formatul corect
       if (item.data && typeof item.data === 'string' && item.data.includes('/')) {
         const dateParts = item.data.split("/");
         if (dateParts.length >= 3) {
-          const year = dateParts[2]; // Extrage anul din "data"
+          const year = dateParts[2];
           if (!acc[year]) {
             acc[year] = [];
           }
           acc[year].push(item);
         }
       } else {
-        console.warn("Acreditare item with invalid date format:", item);
+        console.warn(`[${timestamp}] Acreditari item with invalid date format:`, item);
       }
       return acc;
     }, {});
-
+    
     Object.keys(groupedByYear).forEach(year => {
-      console.log(`Year ${year}: ${groupedByYear[year]?.length} acreditari`);
+      console.log(`[${timestamp}] Acreditari Year ${year}: ${groupedByYear[year]?.length} items`);
     });
 
     return groupedByYear;
   } catch (e) {
-    console.error("Error fetching documents from Firestore:", e);
+    console.error(`[${Date.now()}] Eroare la preluarea acreditarilor:`, e);
     return {};
   }
 };

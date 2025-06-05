@@ -1,66 +1,88 @@
 import { initializeApp } from "firebase/app";
+import { getFirestore, connectFirestoreEmulator, enableNetwork, disableNetwork, clearIndexedDbPersistence, terminate } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { getDatabase } from "firebase/database";
-import { getFirestore, enableNetwork, disableNetwork } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Your Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAvibfeWKkrnvxZqotnt6htYkCMjkE7frc",
-  authDomain: "isudb-e349d.firebaseapp.com",
-  databaseURL: "https://isudb-e349d-default-rtdb.firebaseio.com",
-  projectId: "isudb-e349d",
-  storageBucket: "isudb-e349d.appspot.com",
-  messagingSenderId: "367957621287",
-  appId: "1:367957621287:web:1b41735dd05b93f5236c02",
+  apiKey: "AIzaSyBRBTW2_E88mKdOYGjI4OTHhHE1xaHq3rw",
+  authDomain: "db-isudeansul.firebaseapp.com",
+  projectId: "db-isudeansul",
+  storageBucket: "db-isudeansul.appspot.com",
+  messagingSenderId: "1013015567056",
+  appId: "1:1013015567056:web:0a31a3b0b1d4e0ab8ed3cd",
+  measurementId: "G-VN6T6XFXQL"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize other Firebase services
-const storage = getStorage(app);
-const authentication = getAuth(app);
-const database = getDatabase(app);
+// Initialize Auth
+export const authentication = getAuth(app);
 
-// Initialize Cloud Firestore with cache disabled
-const db = getFirestore(app);
+// Initialize Storage
+export const storage = getStorage(app);
 
-// Check if we're in production environment
-const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production';
-console.log('Firebase initialized - Environment:', process.env.NODE_ENV, 'Vercel Env:', process.env.VERCEL_ENV, 'Is Production:', isProduction);
+// Initialize Cloud Firestore with NO CACHE and force server data ALWAYS
+export const db = getFirestore(app);
 
-// Disable Firestore offline persistence to ensure fresh data
+// Client-side only: COMPLETELY disable all caching mechanisms
 if (typeof window !== 'undefined') {
-  // Client-side only: disable offline cache more aggressively in production
+  console.log('Disabling ALL Firestore caching mechanisms...');
+  
+  // Try to clear any existing cache
   try {
-    console.log('Configuring Firestore cache settings...');
+    // Terminate any existing connections
+    terminate(db).catch(() => {
+      console.log('No existing Firestore connection to terminate');
+    });
     
+    // Clear IndexedDB persistence if it exists
+    clearIndexedDbPersistence(db).catch((error) => {
+      console.log('No IndexedDB persistence to clear or error clearing:', error);
+    });
+    
+    // Disable network and re-enable to force fresh connections
     disableNetwork(db).then(() => {
-      console.log("Firestore offline mode disabled");
-      enableNetwork(db).then(() => {
-        console.log("Firestore online mode enabled - cache disabled");
-        
-        // Additional cache clearing in production
-        if (isProduction) {
-          console.log("Production environment detected - applying aggressive cache settings");
-          // Force clear any browser caches related to Firestore
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-              for(let registration of registrations) {
-                if (registration.scope.includes('firestore') || registration.scope.includes('firebase')) {
-                  registration.unregister();
-                  console.log('Unregistered Firebase-related service worker');
-                }
-              }
-            });
-          }
+      console.log('Firestore network disabled');
+      return enableNetwork(db);
+    }).then(() => {
+      console.log('Firestore network re-enabled with fresh connection');
+    }).catch((error) => {
+      console.log('Network toggle error (expected):', error);
+    });
+    
+  } catch (error) {
+    console.log('Cache clearing operations (expected some to fail):', error);
+  }
+  
+  // Force browser to clear Firebase caches
+  if ('caches' in window) {
+    caches.keys().then(names => {
+      names.forEach(name => {
+        if (name.includes('firebase') || name.includes('firestore')) {
+          caches.delete(name);
+          console.log('Deleted Firebase cache:', name);
         }
       });
     });
-  } catch (error) {
-    console.error("Firestore cache configuration error:", error);
+  }
+  
+  // Clear localStorage related to Firebase
+  try {
+    Object.keys(localStorage).forEach(key => {
+      if (key.includes('firebase') || key.includes('firestore') || key.includes('google')) {
+        localStorage.removeItem(key);
+        console.log('Cleared localStorage key:', key);
+      }
+    });
+  } catch (e) {
+    console.log('LocalStorage clearing error:', e);
   }
 }
 
-export { storage, authentication, database, db };
+// Force all requests to use server data with aggressive bypass
+export const FORCE_SERVER_OPTIONS = {
+  source: 'server'
+};
+
+export default app;

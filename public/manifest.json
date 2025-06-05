@@ -1,83 +1,71 @@
 {
-  "name": "Portal IRP - Generator Documente",
+  "name": "Portal IRP - Inspectoratul pentru Situații de Urgență",
   "short_name": "Portal IRP",
-  "description": "Generator de documente BICP și Acreditări pentru Portal IRP",
-  "start_url": "/panou-principal",
+  "description": "Portal pentru gestionarea BICP și acreditărilor - ISU",
+  "start_url": "/panou-principal?source=pwa",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#007bff",
+  "theme_color": "#1f4e79",
   "orientation": "portrait-primary",
   "scope": "/",
-  "lang": "ro-RO",
-  "categories": ["productivity", "business"],
+  "lang": "ro",
+  "categories": ["productivity", "business", "government"],
   "icons": [
     {
       "src": "/favicon.ico",
-      "sizes": "32x32",
-      "type": "image/x-icon"
+      "sizes": "16x16 32x32 48x48",
+      "type": "image/x-icon",
+      "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-192x192.svg",
-      "sizes": "192x192",
+      "src": "/favicon.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-192x192.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [
     {
-      "name": "Creaza BICP",
+      "name": "Creează BICP",
       "short_name": "BICP",
-      "description": "Creează rapid un document BICP",
-      "url": "/creaza-BICP",
+      "description": "Creează Buletin Informativ sau Comunicat de Presă",
+      "url": "/creaza-BICP?source=shortcut",
       "icons": [
         {
           "src": "/favicon.ico",
-          "sizes": "32x32"
+          "sizes": "32x32",
+          "type": "image/x-icon"
         }
       ]
     },
     {
-      "name": "Creaza Acreditare",
+      "name": "Creează Acreditare",
       "short_name": "Acreditare",
-      "description": "Creează rapid o acreditare",
-      "url": "/creaza-acreditare",
+      "description": "Creează documentație pentru acreditare jurnaliști",
+      "url": "/creaza-acreditare?source=shortcut",
       "icons": [
         {
           "src": "/favicon.ico",
-          "sizes": "32x32"
+          "sizes": "32x32",
+          "type": "image/x-icon"
         }
       ]
     },
     {
       "name": "Lista BICP",
-      "short_name": "Lista BICP",
-      "description": "Vizualizează lista documentelor BICP",
-      "url": "/lista-BICP",
+      "short_name": "Lista",
+      "description": "Vizualizează lista completă BICP",
+      "url": "/lista-BICP?source=shortcut",
       "icons": [
         {
           "src": "/favicon.ico",
-          "sizes": "32x32"
-        }
-      ]
-    },
-    {
-      "name": "Lista Acreditări",
-      "short_name": "Lista Acreditări",
-      "description": "Vizualizează lista acreditărilor",
-      "url": "/lista-acreditari",
-      "icons": [
-        {
-          "src": "/favicon.ico",
-          "sizes": "32x32"
+          "sizes": "32x32",
+          "type": "image/x-icon"
         }
       ]
     }
   ],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "version": "2.0.0",
+  "cache_bust": true
 } 

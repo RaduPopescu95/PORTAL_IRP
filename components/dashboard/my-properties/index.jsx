@@ -9,6 +9,7 @@ import TableData from "./TableData";
 import SearchBox from "./SearchBox";
 import { handleGetFirestore } from "@/utils/firestoreUtils";
 import { useAuth } from "@/context/AuthContext";
+import CacheBuster from "@/components/common/CacheBuster";
 
 import { db } from "@/firebase";
 import { useEffect, useState } from "react";
@@ -171,6 +172,7 @@ const index = ({ oferte, an }) => {
 
   return (
     <>
+      <CacheBuster />
       {/* <!-- Main Header Nav --> */}
       <Header />
 
