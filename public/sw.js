@@ -85,12 +85,20 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Skip Firestore requests - nu le cache-am pentru date fresh
+  // Mai comprehensive filtering pentru Firestore
   if (url.hostname.includes('firestore.googleapis.com') || 
       url.hostname.includes('firebase.googleapis.com') ||
-      url.pathname.includes('/firestore/') ||
+      url.hostname.includes('firebaseapp.com') ||
+      url.pathname.includes('/firestore') ||
+      url.pathname.includes('/firebase') ||
       url.pathname.includes('/api/generateAcreditari') ||
-      url.pathname.includes('/api/generate')) {
-    console.log('Service Worker: Skipping cache for Firestore request:', url.href);
+      url.pathname.includes('/api/generate') ||
+      url.search.includes('database') ||
+      request.url.includes('firestore') ||
+      request.url.includes('firebase')) {
+    console.log('Service Worker: Skipping cache for Firebase/Firestore request:', url.href);
+    // Doar treci request-ul prin network fără cache
+    event.respondWith(fetch(request));
     return;
   }
 
@@ -156,12 +164,16 @@ self.addEventListener('fetch', (event) => {
 
 // Helper functions
 function shouldCacheDynamically(url) {
-  // Nu cache-ăm requests către Firestore sau API-uri de date
+  // Nu cache-ăm requests către Firestore sau API-uri de date - mai comprehensive
   if (url.includes('firestore.googleapis.com') || 
       url.includes('firebase.googleapis.com') ||
+      url.includes('firebaseapp.com') ||
+      url.includes('/firestore') ||
+      url.includes('/firebase') ||
       url.includes('/api/generate') ||
       url.includes('/api/') ||
-      url.includes('_next/static/chunks/app/')) {
+      url.includes('_next/static/chunks/app/') ||
+      url.includes('database')) {
     return false;
   }
 

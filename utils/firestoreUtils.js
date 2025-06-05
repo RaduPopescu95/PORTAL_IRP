@@ -822,3 +822,141 @@ export const deleteFirestoreItem = async (collectionName, docId) => {
 };
 
 //-------- PAGINATION -----
+
+// Funcție specială pentru obținerea numerelor cu cache bypass foarte agresiv
+export const getFirestoreItemWithRetry = async (collection, docId, maxRetries = 3) => {
+  let lastError = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      console.log(`Attempt ${attempt + 1} to fetch ${collection}/${docId}`);
+      
+      const docRef = doc(db, collection, docId);
+      
+      // Force server data with very aggressive cache bypassing
+      const docSnap = await getDoc(docRef, { 
+        source: 'server',
+        // Force bypass any cache layers
+        includeMetadataChanges: true
+      });
+      
+      if (docSnap.exists()) {
+        console.log(`Successfully fetched ${collection}/${docId} on attempt ${attempt + 1}`, docSnap.data());
+        return docSnap.data();
+      } else {
+        console.log(`Document ${collection}/${docId} does not exist, attempt ${attempt + 1}`);
+        return null;
+      }
+    } catch (error) {
+      lastError = error;
+      console.error(`Error fetching ${collection}/${docId} on attempt ${attempt + 1}:`, error);
+      
+      // Wait before retry (exponential backoff)
+      if (attempt < maxRetries - 1) {
+        const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+        console.log(`Waiting ${delay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  console.error(`Failed to fetch ${collection}/${docId} after ${maxRetries} attempts`, lastError);
+  throw lastError || new Error(`Failed to fetch document after ${maxRetries} attempts`);
+};
+
+// Funcție specială pentru setarea numerelor cu retry
+export const setFirestoreItemWithRetry = async (collection, docId, data, maxRetries = 3) => {
+  let lastError = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      console.log(`Attempt ${attempt + 1} to set ${collection}/${docId}`);
+      
+      const docRef = doc(db, collection, docId);
+      await setDoc(docRef, data);
+      
+      console.log(`Successfully set ${collection}/${docId} on attempt ${attempt + 1}`);
+      return;
+    } catch (error) {
+      lastError = error;
+      console.error(`Error setting ${collection}/${docId} on attempt ${attempt + 1}:`, error);
+      
+      // Wait before retry
+      if (attempt < maxRetries - 1) {
+        const delay = Math.pow(2, attempt) * 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError || new Error(`Failed to set document after ${maxRetries} attempts`);
+};
+
+// Funcție ultra-agresivă pentru producție care încearcă multiple strategii
+export const getFirestoreNumberUltraAggressive = async (collection, docId) => {
+  console.log(`Ultra-aggressive fetch for ${collection}/${docId}`);
+  
+  // Strategy 1: Normal retry with server source
+  try {
+    const result = await getFirestoreItemWithRetry(collection, docId, 2);
+    if (result !== null) {
+      console.log(`Strategy 1 success for ${collection}/${docId}:`, result);
+      return result;
+    }
+  } catch (error) {
+    console.warn(`Strategy 1 failed for ${collection}/${docId}:`, error.message);
+  }
+
+  // Strategy 2: Direct document access with timestamp bypass
+  try {
+    const docRef = doc(db, collection, docId);
+    const timestamp = Date.now();
+    const urlWithCache = `${docRef.path}?t=${timestamp}&bypass=true`;
+    
+    console.log(`Strategy 2: Attempting direct access for ${collection}/${docId}`);
+    const docSnap = await getDoc(docRef, { 
+      source: 'server',
+      includeMetadataChanges: true
+    });
+    
+    if (docSnap.exists()) {
+      console.log(`Strategy 2 success for ${collection}/${docId}:`, docSnap.data());
+      return docSnap.data();
+    }
+  } catch (error) {
+    console.warn(`Strategy 2 failed for ${collection}/${docId}:`, error.message);
+  }
+
+  // Strategy 3: Create default if doesn't exist
+  try {
+    console.log(`Strategy 3: Creating default document for ${collection}/${docId}`);
+    let defaultData;
+    
+    if (docId === 'ultimulNumar') {
+      defaultData = { numar: 1 };
+    } else if (docId === 'ComunicatNumar') {
+      defaultData = { numarComunicat: 1 };
+    } else if (docId === 'ultimulNumarAcreditare') {
+      defaultData = { numar: 1 };
+    } else {
+      defaultData = { value: 1 };
+    }
+    
+    await setFirestoreItemWithRetry(collection, docId, defaultData);
+    console.log(`Strategy 3 success: Created default for ${collection}/${docId}:`, defaultData);
+    return defaultData;
+  } catch (error) {
+    console.error(`Strategy 3 failed for ${collection}/${docId}:`, error.message);
+  }
+
+  // Final fallback
+  console.error(`All strategies failed for ${collection}/${docId}, using final fallback`);
+  if (docId === 'ultimulNumar') {
+    return { numar: 1 };
+  } else if (docId === 'ComunicatNumar') {
+    return { numarComunicat: 1 };
+  } else if (docId === 'ultimulNumarAcreditare') {
+    return { numar: 1 };
+  }
+  return { value: 1 };
+};

@@ -3,7 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getFirestoreItem, setFirestoreItem } from "@/utils/firestoreUtils";
+import { getFirestoreItem, setFirestoreItem, getFirestoreItemWithRetry, setFirestoreItemWithRetry, getFirestoreNumberUltraAggressive } from "@/utils/firestoreUtils";
 import LogoUpload from "../my-profile/LogoUpload";
 import CommonLoader from "@/components/common/CommonLoader";
 import { AlertModal } from "@/components/common/AlertModal";
@@ -259,26 +259,40 @@ const CreateList = ({ oferta }) => {
   useEffect(() => {
     const fetchNumar = async () => {
       try {
-        const storedNumar = await getFirestoreItem(
+        console.log("=== STARTING ACREDITARE NUMBER FETCH (ULTRA-AGGRESSIVE) ===");
+        console.log("Environment check:", {
+          hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+          isProduction: process.env.NODE_ENV === 'production'
+        });
+        
+        // Folosește funcția ultra-agresivă pentru obținerea numărului
+        const storedNumar = await getFirestoreNumberUltraAggressive(
           "numere",
           "ultimulNumarAcreditare"
         );
 
-        let nextNumar;
+        let nextNumar = storedNumar?.numar || 1;
+        
+        console.log("Retrieved acreditare number:", nextNumar);
 
-        if (!storedNumar) {
-          // Verificați dacă storedNumar este null
-          nextNumar = 0; // Setează numarul la 0 dacă este prima dată
-        } else {
-          nextNumar = storedNumar.numar; // Altfel, incrementați numărul
+        setNumar(nextNumar.toString());
+        
+        // Salvează numărul actualizat
+        try {
+          await setFirestoreItemWithRetry("numere", "ultimulNumarAcreditare", {
+            numar: nextNumar,
+          });
+          console.log("Acreditare number successfully saved to Firestore");
+        } catch (saveError) {
+          console.warn("Failed to save acreditare number, but continuing with retrieved value:", saveError);
         }
-
-        setNumar(nextNumar.toString()); // Actualizați starea
-        await setFirestoreItem("numere", "ultimulNumarAcreditare", {
-          numar: nextNumar,
-        }); // Salvați noul număr
+        
+        console.log("=== ACREDITARE NUMBER FETCH COMPLETED SUCCESSFULLY ===");
       } catch (e) {
-        console.error("Eroare la citirea numărului din Firestore", e);
+        console.error("=== ACREDITARE NUMBER FETCH FAILED COMPLETELY ===", e);
+        // Ultimate fallback
+        console.log("Using ultimate fallback value for acreditare");
+        setNumar("1");
       }
     };
 

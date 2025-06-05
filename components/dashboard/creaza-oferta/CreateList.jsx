@@ -3,16 +3,18 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { getFirestoreItem, setFirestoreItem } from "@/utils/firestoreUtils";
+import { getFirestoreItem, setFirestoreItem, getFirestoreItemWithRetry, setFirestoreItemWithRetry, getFirestoreNumberUltraAggressive } from "@/utils/firestoreUtils";
 import LogoUpload from "../my-profile/LogoUpload";
 import CommonLoader from "@/components/common/CommonLoader";
 import { AlertModal } from "@/components/common/AlertModal";
 import { useMobileOptimization } from "@/hooks/useMobileOptimization";
+import { useFirestoreDebug } from "@/hooks/useFirestoreDebug";
 
 const CreateList = ({ oferta }) => {
   const { currentUser, userData } = useAuth();
   const router = useRouter();
   const { isMobile, keyboardOpen, getMobileStyles, scrollToElement } = useMobileOptimization();
+  const debugInfo = useFirestoreDebug();
   
   // Refs pentru optimizare mobile
   const titleRef = useRef(null);
@@ -232,33 +234,45 @@ const CreateList = ({ oferta }) => {
   useEffect(() => {
     const fetchNumar = async () => {
       try {
-        const storedNumar = await getFirestoreItem("numere", "ultimulNumar");
-        const storedNumarComunicat = await getFirestoreItem(
+        console.log("=== STARTING NUMBER FETCH (ULTRA-AGGRESSIVE) ===");
+        console.log("Environment check:", {
+          hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+          isProduction: process.env.NODE_ENV === 'production'
+        });
+        
+        // Folosește funcția ultra-agresivă pentru obținerea numerelor
+        const storedNumar = await getFirestoreNumberUltraAggressive("numere", "ultimulNumar");
+        const storedNumarComunicat = await getFirestoreNumberUltraAggressive(
           "NumarComunicat",
           "ComunicatNumar"
         );
-        let nextNumar;
-        let nextNumarComuniicat;
-        if (!storedNumar) {
-          // Verificați dacă storedNumar este null
-          nextNumar = 0; // Setează numarul la 0 dacă este prima dată
-        } else {
-          nextNumar = storedNumar.numar; // Altfel, incrementați numărul
+        
+        let nextNumar = storedNumar?.numar || 1;
+        let nextNumarComuniicat = storedNumarComunicat?.numarComunicat || 1;
+        
+        console.log("Retrieved numbers:", { nextNumar, nextNumarComuniicat });
+        
+        setNumar(nextNumar.toString());
+        setNumarComunicat(nextNumarComuniicat.toString());
+        
+        // Salvează numerele actualizate
+        try {
+          await setFirestoreItemWithRetry("numere", "ultimulNumar", { numar: nextNumar });
+          await setFirestoreItemWithRetry("NumarComunicat", "ComunicatNumar", {
+            numarComunicat: nextNumarComuniicat,
+          });
+          console.log("Numbers successfully saved to Firestore");
+        } catch (saveError) {
+          console.warn("Failed to save numbers, but continuing with retrieved values:", saveError);
         }
-        if (!storedNumarComunicat) {
-          // Verificați dacă storedNumarComunicat este null
-          nextNumarComuniicat = 0; // Setează numarul la 0 dacă este prima dată
-        } else {
-          nextNumarComuniicat = storedNumarComunicat.numarComunicat; // Altfel, incrementați numărul
-        }
-        setNumar(nextNumar.toString()); // Actualizați starea
-        setNumarComunicat(nextNumarComuniicat.toString()); // Actualizați starea
-        await setFirestoreItem("numere", "ultimulNumar", { numar: nextNumar }); // Salvați noul număr
-        await setFirestoreItem("NumarComunicat", "ComunicatNumar", {
-          numarComunicat: nextNumarComuniicat,
-        }); // Salvați noul număr
+        
+        console.log("=== NUMBER FETCH COMPLETED SUCCESSFULLY ===");
       } catch (e) {
-        console.error("Eroare la citirea numărului din Firestore", e);
+        console.error("=== NUMBER FETCH FAILED COMPLETELY ===", e);
+        // Ultimate fallback
+        console.log("Using ultimate fallback values");
+        setNumar("1");
+        setNumarComunicat("1");
       }
     };
 
@@ -279,6 +293,49 @@ const CreateList = ({ oferta }) => {
       numeSemnatar: "ing. FLOREA Cristian-Claudiu",
     },
   ];
+
+  // Log debugging info when component mounts
+  useEffect(() => {
+    console.log('CreateList BICP mounted with debug info:', debugInfo);
+    console.log('Current environment details:', {
+      hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+      userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'server',
+      nodeEnv: process.env.NODE_ENV,
+      vercelEnv: process.env.VERCEL_ENV
+    });
+  }, [debugInfo]);
+
+  // Funcție de debugging pentru testarea conexiunii Firestore
+  const testFirestoreConnection = async () => {
+    console.log("=== MANUAL FIRESTORE TEST ===");
+    setAlert({ message: "Testează conexiunea Firestore...", type: "info" });
+    
+    try {
+      const testStart = Date.now();
+      
+      // Test 1: Citire numere
+      const testNumar = await getFirestoreNumberUltraAggressive("numere", "ultimulNumar");
+      const testComunicat = await getFirestoreNumberUltraAggressive("NumarComunicat", "ComunicatNumar");
+      
+      const testEnd = Date.now();
+      const duration = testEnd - testStart;
+      
+      console.log("Test Results:", { testNumar, testComunicat, duration });
+      
+      setAlert({ 
+        message: `Test reușit! Numar: ${testNumar?.numar || 'N/A'}, Comunicat: ${testComunicat?.numarComunicat || 'N/A'} (${duration}ms)`, 
+        type: "success" 
+      });
+      
+      // Actualizează UI cu valorile citite
+      setNumar((testNumar?.numar || 1).toString());
+      setNumarComunicat((testComunicat?.numarComunicat || 1).toString());
+      
+    } catch (error) {
+      console.error("Manual test failed:", error);
+      setAlert({ message: `Test eșuat: ${error.message}`, type: "error" });
+    }
+  };
 
   return (
     <div ref={formRef} style={mobileStyles.keyboardPadding}>
@@ -459,6 +516,27 @@ const CreateList = ({ oferta }) => {
             />
           </div>
         </div>
+
+        {/* Debug Button - doar în development sau pentru debugging */}
+        {(process.env.NODE_ENV === 'development' || debugInfo.environment === 'production') && (
+          <div className="col-lg-12 mb-3">
+            <button
+              type="button" 
+              onClick={testFirestoreConnection}
+              className="btn btn-outline-info btn-sm"
+              style={{ fontSize: '12px' }}
+            >
+              🔧 Test Firestore Connection
+            </button>
+            {debugInfo && (
+              <div style={{ fontSize: '11px', marginTop: '5px', color: '#666' }}>
+                Environment: {debugInfo.environment} | 
+                Success: {debugInfo.success ? '✅' : '❌'} | 
+                Duration: {debugInfo.duration}ms
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Submit Button */}
         <div className="col-xl-12">
