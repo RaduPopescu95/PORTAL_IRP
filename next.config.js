@@ -12,7 +12,7 @@ const nextConfig = {
   swcMinify: true,
   compress: true,
   poweredByHeader: false,
-  // Headers for PWA
+  // Headers for PWA and selective no-cache
   async headers() {
     return [
       {
@@ -38,93 +38,30 @@ const nextConfig = {
         ],
       },
       {
-        source: '/icons/(.*)',
+        // Only no-cache for specific pages that fetch data
+        source: '/(admin-irp)/(lista-BICP|lista-acreditari|panou-principal)',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        // Apply to all routes
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+            value: 'no-store, no-cache, must-revalidate, max-age=0',
           },
           {
             key: 'Pragma',
             value: 'no-cache',
           },
-          {
-            key: 'Expires',
-            value: '0',
-          },
-          {
-            key: 'Surrogate-Control',
-            value: 'no-store',
-          },
         ],
       },
       {
-        // Extra aggressive for API routes
+        // No-cache for API routes only
         source: '/api/(.*)',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0',
+            value: 'no-store, no-cache, must-revalidate, max-age=0',
           },
           {
             key: 'Pragma',
             value: 'no-cache',
-          },
-          {
-            key: 'Expires',
-            value: '0',
-          },
-          {
-            key: 'Surrogate-Control',
-            value: 'no-store',
-          },
-          {
-            key: 'CDN-Cache-Control',
-            value: 'no-store',
-          },
-          {
-            key: 'Vercel-CDN-Cache-Control',
-            value: 'no-store',
-          },
-        ],
-      },
-      {
-        // Extra aggressive for all app pages
-        source: '/(admin-irp|admin-master|homes|listings)/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0',
-          },
-          {
-            key: 'Pragma',
-            value: 'no-cache',
-          },
-          {
-            key: 'Expires',
-            value: '0',
-          },
-          {
-            key: 'Surrogate-Control',
-            value: 'no-store',
-          },
-          {
-            key: 'CDN-Cache-Control',
-            value: 'no-store',
-          },
-          {
-            key: 'Vercel-CDN-Cache-Control',
-            value: 'no-store',
           },
         ],
       },
@@ -134,8 +71,10 @@ const nextConfig = {
   output: 'standalone',
   // Optimize bundles
   webpack: (config, { dev, isServer }) => {
-    // Disable all forms of caching in webpack
-    config.cache = false;
+    // Only disable cache in development or for specific builds
+    if (dev) {
+      config.cache = false;
+    }
     
     // Ensure fresh builds
     config.optimization = {
