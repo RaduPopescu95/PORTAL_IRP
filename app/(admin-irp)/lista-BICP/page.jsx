@@ -1,4 +1,4 @@
-import dynamic from "next/dynamic";
+import dynamicImport from "next/dynamic";
 import MyProperties from "@/components/dashboard/my-properties";
 import { unstable_noStore as noStore } from "next/cache";
 import { authentication, db, FORCE_SERVER_OPTIONS } from "@/firebase";
@@ -144,4 +144,4 @@ const ListaBICPPage = async () => {
   }
 };
 
-export default dynamic(() => Promise.resolve(ListaBICPPage), { ssr: false });
+export default dynamicImport(() => Promise.resolve(ListaBICPPage), { ssr: false });
