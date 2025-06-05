@@ -960,3 +960,39 @@ export const getFirestoreNumberUltraAggressive = async (collection, docId) => {
   }
   return { value: 1 };
 };
+
+// Funcție specială pentru salvarea documentelor cu validare anti-undefined
+export const setFirestoreDocumentSafe = async (collection, docId, data) => {
+  try {
+    // Funcție helper pentru curățarea datelor de undefined
+    const cleanData = (obj) => {
+      const cleaned = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (value !== undefined && value !== null) {
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Recursiv pentru obiecte nested
+            const cleanedNested = cleanData(value);
+            if (Object.keys(cleanedNested).length > 0) {
+              cleaned[key] = cleanedNested;
+            }
+          } else {
+            cleaned[key] = value;
+          }
+        }
+      }
+      return cleaned;
+    };
+
+    const cleanedData = cleanData(data);
+    console.log(`Setting document ${collection}/${docId} with cleaned data:`, cleanedData);
+
+    const docRef = doc(db, collection, docId);
+    await setDoc(docRef, cleanedData);
+    
+    console.log(`Successfully saved ${collection}/${docId}`);
+    return cleanedData;
+  } catch (error) {
+    console.error(`Error saving document ${collection}/${docId}:`, error);
+    throw error;
+  }
+};

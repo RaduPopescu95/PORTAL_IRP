@@ -3,7 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { getFirestoreItem, setFirestoreItem, getFirestoreItemWithRetry, setFirestoreItemWithRetry, getFirestoreNumberUltraAggressive } from "@/utils/firestoreUtils";
+import { getFirestoreItem, setFirestoreItem, getFirestoreItemWithRetry, setFirestoreItemWithRetry, getFirestoreNumberUltraAggressive, setFirestoreDocumentSafe } from "@/utils/firestoreUtils";
 import LogoUpload from "../my-profile/LogoUpload";
 import CommonLoader from "@/components/common/CommonLoader";
 import { AlertModal } from "@/components/common/AlertModal";
@@ -128,14 +128,24 @@ const CreateList = ({ oferta }) => {
           },
         }),
       });
+      
       const data = await response.json();
+      console.log(`API response for ${type}:`, data);
+      
+      // Verifică dacă response-ul este valid
+      if (!response.ok) {
+        throw new Error(`API error: ${data.error || response.statusText}`);
+      }
+      
       if (type === "PDF") {
-        return data.pdfLink;
+        return data.pdfLink || null;
       } else {
-        return data.wordLink;
+        return data.wordLink || null;
       }
     } catch (error) {
-      showAlert(`Eroare: ${error.message}`, "danger");
+      console.error(`Eroare la generarea ${type}:`, error);
+      showAlert(`Eroare la generarea ${type}: ${error.message}`, "danger");
+      return null; // Returnează null în loc de undefined
     }
   };
 
@@ -145,25 +155,67 @@ const CreateList = ({ oferta }) => {
       scrollToElement(formRef.current, 20);
     }
 
+    // Validări înainte de a începe procesul
+    if (!selectedItem) {
+      showAlert("Te rog selectează tipul de document.", "warning");
+      return;
+    }
+    
+    if (!titlu.trim()) {
+      showAlert("Te rog completează titlul documentului.", "warning");
+      return;
+    }
+    
+    if (!comunicat.trim()) {
+      showAlert("Te rog completează textul documentului.", "warning");
+      return;
+    }
+    
+    if (!semnatar.numeSemnatar) {
+      showAlert("Te rog selectează un semnatar.", "warning");
+      return;
+    }
+    
+    if (!numar || !numarComunicat) {
+      showAlert("Numerele de înregistrare nu sunt disponibile. Te rog încearcă din nou.", "warning");
+      return;
+    }
+
     const templateIdPdf = "1pWOmI_JNf__PkE3r7G68TmJshxblaEUT383xhhNdois";
     const templateIdWord = "12jLztiQvtEf46RKXZ1N3hCI-b_O4ko2hJ2xVZPkUYAk";
 
     try {
-      console.log("Test...");
+      console.log("Începe generarea documentelor...");
+      console.log("Date pentru generare:", {
+        selectedItem,
+        titlu: titlu.substring(0, 50) + "...",
+        semnatar: semnatar.numeSemnatar,
+        numar,
+        numarComunicat
+      });
+      
       setLoading(true);
 
       // Apel pentru PDF
+      console.log("Generare PDF...");
       const pdfLink = await handleSendApi(templateIdPdf, "PDF");
 
       // Apel pentru Word
+      console.log("Generare Word...");
       const wordLink = await handleSendApi(templateIdWord, "Word");
-      // Function to send POST request
 
-      setLoading(false);
-      const nextNumar = parseInt(numar, 10) + 1; // Incrementați numărul
-      setNumar(nextNumar.toString()); // Actualizați starea
-      const nextNumarComunicat = parseInt(numarComunicat, 10) + 1; // Incrementați numărul
-      setNumarComunicat(nextNumarComunicat.toString()); // Actualizați starea
+      console.log("Link-uri generate:", { pdfLink, wordLink });
+
+      // Verifică dacă cel puțin un link a fost generat cu succes
+      if (!pdfLink && !wordLink) {
+        throw new Error("Nu s-a putut genera niciun document. Verifică conexiunea și încearcă din nou.");
+      }
+
+      const nextNumar = parseInt(numar, 10) + 1;
+      setNumar(nextNumar.toString());
+      const nextNumarComunicat = parseInt(numarComunicat, 10) + 1;
+      setNumarComunicat(nextNumarComunicat.toString());
+      
       let firstTitlePart;
       if (selectedItem === "Buletin Informativ") {
         firstTitlePart = "BI";
@@ -176,7 +228,10 @@ const CreateList = ({ oferta }) => {
       } else {
         firstTitlePart = selectedItem;
       }
+      
       const t = `${numarComunicat} - ${firstTitlePart} - ${titlu}`;
+      
+      // Creează documentData doar cu valorile valide (nu null/undefined)
       const documentData = {
         numar: numar,
         numarComunicat: numarComunicat,
@@ -184,31 +239,51 @@ const CreateList = ({ oferta }) => {
         nume: selectedItem,
         titlu: titlu,
         comunicat: comunicat,
-        pdfLink: pdfLink,
-        wordLink: wordLink,
         numeAfisare: t,
-        pentru: semnatar.pentru,
-        functia: semnatar.functia,
-        grad: semnatar.grad,
-        numeSemnatar: semnatar.numeSemnatar,
+        pentru: semnatar.pentru || "",
+        functia: semnatar.functia || "",
+        grad: semnatar.grad || "",
+        numeSemnatar: semnatar.numeSemnatar || "",
       };
-      console.log("documentdata..", documentData);
-      // Salvați documentul în Firestore în colecția "Comunicate"
-      await setFirestoreItem(
+
+      // Adaugă linkurile doar dacă sunt valide
+      if (pdfLink) {
+        documentData.pdfLink = pdfLink;
+      }
+      if (wordLink) {
+        documentData.wordLink = wordLink;
+      }
+
+      console.log("Salvare document în Firestore:", documentData);
+      
+      // Salvați documentul în Firestore în colecția "Comunicate" cu validare anti-undefined
+      await setFirestoreDocumentSafe(
         "Comunicate",
         `${selectedItem}-${numar}`,
         documentData
       );
 
-      await setFirestoreItem("numere", "ultimulNumar", { numar: nextNumar }); // Salvați noul număr
+      await setFirestoreItem("numere", "ultimulNumar", { numar: nextNumar });
       await setFirestoreItem("NumarComunicat", "ComunicatNumar", {
         numarComunicat: nextNumarComunicat,
-      }); // Salvați noul număr      
-      showAlert(`Documente create cu succes!`, "success");
+      });
+      
+      setLoading(false);
+      
+      let successMessage = "Document salvat cu succes!";
+      if (pdfLink && wordLink) {
+        successMessage = "Documente PDF și Word create cu succes!";
+      } else if (pdfLink) {
+        successMessage = "Document PDF creat cu succes! (Word nu a putut fi generat)";
+      } else if (wordLink) {
+        successMessage = "Document Word creat cu succes! (PDF nu a putut fi generat)";
+      }
+      
+      showAlert(successMessage, "success");
     } catch (error) {
       setLoading(false);
-      showAlert(`Error at POST REQUEST! ${error.message}`, "error");
-      // Gestionează erorile, cum ar fi afișarea unui mesaj de eroare
+      console.error("Eroare completă:", error);
+      showAlert(`Eroare la generarea documentului: ${error.message}`, "error");
     }
   };
 
@@ -334,6 +409,37 @@ const CreateList = ({ oferta }) => {
     } catch (error) {
       console.error("Manual test failed:", error);
       setAlert({ message: `Test eșuat: ${error.message}`, type: "error" });
+    }
+  };
+
+  // Funcție de test pentru API fără salvare în Firestore
+  const testApiGeneration = async () => {
+    if (!selectedItem || !titlu.trim() || !comunicat.trim() || !semnatar.numeSemnatar) {
+      showAlert("Te rog completează toate câmpurile pentru test.", "warning");
+      return;
+    }
+
+    console.log("=== API TEST MODE ===");
+    setAlert({ message: "Testează API-ul de generare...", type: "info" });
+
+    try {
+      const templateIdWord = "12jLztiQvtEf46RKXZ1N3hCI-b_O4ko2hJ2xVZPkUYAk";
+      const testStart = Date.now();
+      
+      const wordLink = await handleSendApi(templateIdWord, "Word");
+      const testEnd = Date.now();
+      
+      if (wordLink) {
+        setAlert({ 
+          message: `API test reușit! Link generat în ${testEnd - testStart}ms. Nu s-a salvat în baza de date.`, 
+          type: "success" 
+        });
+        console.log("Test successful, generated link:", wordLink);
+      } else {
+        setAlert({ message: "API test eșuat - nu s-a generat niciun link.", type: "error" });
+      }
+    } catch (error) {
+      setAlert({ message: `API test eșuat: ${error.message}`, type: "error" });
     }
   };
 
@@ -520,14 +626,24 @@ const CreateList = ({ oferta }) => {
         {/* Debug Button - doar în development sau pentru debugging */}
         {(process.env.NODE_ENV === 'development' || debugInfo.environment === 'production') && (
           <div className="col-lg-12 mb-3">
-            <button
-              type="button" 
-              onClick={testFirestoreConnection}
-              className="btn btn-outline-info btn-sm"
-              style={{ fontSize: '12px' }}
-            >
-              🔧 Test Firestore Connection
-            </button>
+            <div className="d-flex gap-2 flex-wrap">
+              <button
+                type="button" 
+                onClick={testFirestoreConnection}
+                className="btn btn-outline-info btn-sm"
+                style={{ fontSize: '12px' }}
+              >
+                🔧 Test Firestore
+              </button>
+              <button
+                type="button" 
+                onClick={testApiGeneration}
+                className="btn btn-outline-secondary btn-sm"
+                style={{ fontSize: '12px' }}
+              >
+                🧪 Test API
+              </button>
+            </div>
             {debugInfo && (
               <div style={{ fontSize: '11px', marginTop: '5px', color: '#666' }}>
                 Environment: {debugInfo.environment} | 
