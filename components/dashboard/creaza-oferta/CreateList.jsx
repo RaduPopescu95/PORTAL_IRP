@@ -9,6 +9,16 @@ import CommonLoader from "@/components/common/CommonLoader";
 import { AlertModal } from "@/components/common/AlertModal";
 import { useMobileOptimization } from "@/hooks/useMobileOptimization";
 import { useFirestoreDebug } from "@/hooks/useFirestoreDebug";
+import dynamic from "next/dynamic";
+
+// Dynamic import pentru React Quill (nu funcționează cu SSR)
+const ReactQuill = dynamic(() => import('react-quill'), { 
+  ssr: false,
+  loading: () => <div style={{ height: '160px', backgroundColor: '#f8f9fa', border: '1px solid #ced4da', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Se încarcă editorul...</div>
+});
+
+// Import CSS pentru Quill
+import 'react-quill/dist/quill.snow.css';
 
 const CreateList = ({ oferta }) => {
   const { currentUser, userData } = useAuth();
@@ -20,6 +30,7 @@ const CreateList = ({ oferta }) => {
   const titleRef = useRef(null);
   const contentRef = useRef(null);
   const formRef = useRef(null);
+  const quillRef = useRef(null);
   
   const [selectedItem, setSelectedItem] = useState("");
   const [semnatar, setSemnatar] = useState({});
@@ -30,10 +41,44 @@ const CreateList = ({ oferta }) => {
   const [value, setValue] = useState(null);
   const [numar, setNumar] = useState("");
   const [numarComunicat, setNumarComunicat] = useState("");
-  // const [pdfLink, setPdfLink] = useState("");
-  // const [wordLink, setWordLink] = useState("");
-  // const [editLink, setEditLink] = useState("");
   const [alert, setAlert] = useState({ message: "", type: "" });
+
+  // Configurația pentru React Quill
+  const quillModules = {
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        ['link'],
+        [{ 'align': [] }],
+        ['clean']
+      ],
+    },
+    clipboard: {
+      matchVisual: false,
+    }
+  };
+
+  const quillFormats = [
+    'header', 'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet', 'indent', 'link', 'align'
+  ];
+
+  // Funcție pentru gestionarea schimbării conținutului în Quill
+  const handleQuillChange = (content, delta, source, editor) => {
+    // Obține textul simplu pentru validări
+    const text = editor.getText().trim();
+    setComunicat(content);
+    
+    // Scroll pe mobile când utilizatorul scrie
+    if (isMobile && source === 'user' && quillRef.current) {
+      setTimeout(() => {
+        scrollToElement(quillRef.current, 100);
+      }, 100);
+    }
+  };
 
   const showAlert = (message, type) => {
     setAlert({ message, type });
@@ -166,8 +211,13 @@ const CreateList = ({ oferta }) => {
       return;
     }
     
-    if (!comunicat.trim()) {
-      showAlert("Te rog completează textul documentului.", "warning");
+    // Validare pentru Quill content - verifică dacă există text real
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = comunicat;
+    const textContent = tempDiv.textContent || tempDiv.innerText || "";
+    
+    if (!textContent.trim()) {
+      showAlert("Te rog completează conținutul documentului.", "warning");
       return;
     }
     
@@ -414,7 +464,12 @@ const CreateList = ({ oferta }) => {
 
   // Funcție de test pentru API fără salvare în Firestore
   const testApiGeneration = async () => {
-    if (!selectedItem || !titlu.trim() || !comunicat.trim() || !semnatar.numeSemnatar) {
+    // Validare pentru Quill content
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = comunicat;
+    const textContent = tempDiv.textContent || tempDiv.innerText || "";
+    
+    if (!selectedItem || !titlu.trim() || !textContent.trim() || !semnatar.numeSemnatar) {
       showAlert("Te rog completează toate câmpurile pentru test.", "warning");
       return;
     }
@@ -441,6 +496,20 @@ const CreateList = ({ oferta }) => {
     } catch (error) {
       setAlert({ message: `API test eșuat: ${error.message}`, type: "error" });
     }
+  };
+
+  // Validare pentru submit button - include verificarea conținutului Quill
+  const isFormValid = () => {
+    if (!selectedItem || !titlu.trim() || !semnatar.numeSemnatar) {
+      return false;
+    }
+    
+    // Verifică conținutul Quill
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = comunicat;
+    const textContent = tempDiv.textContent || tempDiv.innerText || "";
+    
+    return textContent.trim().length > 0;
   };
 
   return (
@@ -598,28 +667,27 @@ const CreateList = ({ oferta }) => {
           </div>
         </div>
 
-        {/* Text/Comunicat */}
+        {/* Text/Comunicat cu React Quill */}
         <div className="col-lg-12">
           <div className="my_profile_setting_textarea">
             <label htmlFor="comunicat" style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '600' }}>
-              Text
+              Conținut Document
             </label>
-            <textarea
-              ref={contentRef}
-              className="form-control"
-              id="comunicat"
-              rows={isMobile ? "5" : "7"}
-              value={comunicat}
-              onChange={(e) => setComunicat(e.target.value)}
-              onFocus={() => handleInputFocus(contentRef)}
-              style={{
-                ...mobileStyles.mobileInput,
-                fontSize: '16px',
-                minHeight: isMobile ? '120px' : '160px',
-                resize: 'vertical',
-              }}
-              placeholder="Introduceți conținutul documentului..."
-            />
+            <div ref={quillRef} style={{ position: 'relative' }}>
+              <ReactQuill
+                value={comunicat}
+                onChange={handleQuillChange}
+                modules={quillModules}
+                formats={quillFormats}
+                placeholder="Introduceți conținutul documentului..."
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: '4px',
+                  fontSize: '16px',
+                }}
+                theme="snow"
+              />
+            </div>
           </div>
         </div>
 
@@ -668,10 +736,10 @@ const CreateList = ({ oferta }) => {
             
             <button 
               onClick={handleSend} 
-              disabled={isLoading || !selectedItem || !titlu.trim() || !comunicat.trim()}
+              disabled={isLoading || !isFormValid()}
               style={{
                 ...mobileStyles.mobileButton,
-                backgroundColor: isLoading || !selectedItem || !titlu.trim() || !comunicat.trim() 
+                backgroundColor: isLoading || !isFormValid() 
                   ? '#6c757d' 
                   : '#007bff',
                 color: 'white',
@@ -703,9 +771,66 @@ const CreateList = ({ oferta }) => {
         onClose={closeAlert}
       />
 
-      {/* Mobile-specific styles */}
-      <style jsx>{`
+      {/* Mobile-specific styles + Quill customization */}
+      <style jsx global>{`
+        /* React Quill Customization */
+        .ql-editor {
+          min-height: ${isMobile ? '120px' : '160px'} !important;
+          font-size: 16px !important;
+          line-height: 1.5;
+          padding: 12px 15px;
+        }
+        
+        .ql-toolbar {
+          border-top: 1px solid #ccc !important;
+          border-left: 1px solid #ccc !important;
+          border-right: 1px solid #ccc !important;
+          border-bottom: none !important;
+          border-radius: 4px 4px 0 0 !important;
+          background-color: #f8f9fa;
+        }
+        
+        .ql-container {
+          border-left: 1px solid #ccc !important;
+          border-right: 1px solid #ccc !important;
+          border-bottom: 1px solid #ccc !important;
+          border-top: none !important;
+          border-radius: 0 0 4px 4px !important;
+          font-size: 16px !important;
+        }
+        
+        .ql-editor::before {
+          color: #6c757d;
+          font-style: italic;
+        }
+        
+        /* Mobile optimizations */
         @media (max-width: 767px) {
+          .ql-toolbar {
+            padding: 8px 6px !important;
+          }
+          
+          .ql-toolbar .ql-formats {
+            margin-right: 8px !important;
+          }
+          
+          .ql-toolbar button {
+            padding: 4px !important;
+            margin: 1px !important;
+          }
+          
+          .ql-editor {
+            font-size: 16px !important; /* Prevents zoom on iOS */
+            min-height: 120px !important;
+          }
+          
+          /* Better touch targets */
+          .ql-toolbar button,
+          .ql-toolbar .ql-picker {
+            min-height: 36px !important;
+            min-width: 36px !important;
+          }
+          
           .form-group {
             margin-bottom: 20px;
           }
@@ -753,6 +878,12 @@ const CreateList = ({ oferta }) => {
             transform: scale(0.98);
             transition: transform 0.1s ease;
           }
+        }
+        
+        /* Focus styles for better accessibility */
+        .ql-editor:focus {
+          outline: 2px solid #007bff;
+          outline-offset: 2px;
         }
       `}</style>
     </div>
