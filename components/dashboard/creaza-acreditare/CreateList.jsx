@@ -280,7 +280,7 @@ const CreateList = ({ oferta }) => {
         // Salvează numărul actualizat
         try {
           await setFirestoreItemWithRetry("numere", "ultimulNumarAcreditare", {
-            numar: nextNumar,
+          numar: nextNumar,
           });
           console.log("Acreditare number successfully saved to Firestore");
         } catch (saveError) {

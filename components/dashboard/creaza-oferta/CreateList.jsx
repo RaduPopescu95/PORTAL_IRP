@@ -9,6 +9,16 @@ import CommonLoader from "@/components/common/CommonLoader";
 import { AlertModal } from "@/components/common/AlertModal";
 import { useMobileOptimization } from "@/hooks/useMobileOptimization";
 import { useFirestoreDebug } from "@/hooks/useFirestoreDebug";
+import dynamic from "next/dynamic";
+
+// Dynamic import pentru React Quill (nu funcționează cu SSR)
+const ReactQuill = dynamic(() => import('react-quill'), { 
+  ssr: false,
+  loading: () => <div style={{ height: '160px', backgroundColor: '#f8f9fa', border: '1px solid #ced4da', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Se încarcă editorul...</div>
+});
+
+// Import CSS pentru Quill
+import 'react-quill/dist/quill.snow.css';
 
 const CreateList = ({ oferta }) => {
   const { currentUser, userData } = useAuth();
@@ -20,6 +30,7 @@ const CreateList = ({ oferta }) => {
   const titleRef = useRef(null);
   const contentRef = useRef(null);
   const formRef = useRef(null);
+  const quillRef = useRef(null);
   
   const [selectedItem, setSelectedItem] = useState("");
   const [semnatar, setSemnatar] = useState({});
@@ -30,10 +41,44 @@ const CreateList = ({ oferta }) => {
   const [value, setValue] = useState(null);
   const [numar, setNumar] = useState("");
   const [numarComunicat, setNumarComunicat] = useState("");
-  // const [pdfLink, setPdfLink] = useState("");
-  // const [wordLink, setWordLink] = useState("");
-  // const [editLink, setEditLink] = useState("");
   const [alert, setAlert] = useState({ message: "", type: "" });
+  const [purtatorCuvant, setPurtatorCuvant] = useState('Locotenent Popescu Radu');
+
+  // Configurația pentru React Quill
+  const quillModules = {
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        ['link'],
+        [{ 'align': [] }],
+        ['clean']
+      ],
+    },
+    clipboard: {
+      matchVisual: false,
+    }
+  };
+
+  const quillFormats = [
+    'header', 'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet', 'indent', 'link', 'align'
+  ];
+
+  // Funcție pentru gestionarea schimbării conținutului în Quill
+  const handleQuillChange = (content, delta, source, editor) => {
+    // Setează conținutul HTML direct
+    setComunicat(content);
+    
+    // Scroll pe mobile când utilizatorul scrie
+    if (isMobile && source === 'user' && quillRef.current) {
+      setTimeout(() => {
+        scrollToElement(quillRef.current, 100);
+      }, 100);
+    }
+  };
 
   const showAlert = (message, type) => {
     setAlert({ message, type });
@@ -125,6 +170,7 @@ const CreateList = ({ oferta }) => {
             functia: semnatar.functia,
             grad: semnatar.grad,
             numeSemnatar: semnatar.numeSemnatar,
+            "purtator-cuvant": purtatorCuvant,
           },
         }),
       });
@@ -149,6 +195,22 @@ const CreateList = ({ oferta }) => {
     }
   };
 
+  // Funcție helper pentru verificarea conținutului Quill
+  const hasValidQuillContent = (htmlContent) => {
+    if (!htmlContent || htmlContent.trim() === '') return false;
+    
+    // Creează un element temporar pentru a extrage textul
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    const textContent = tempDiv.textContent || tempDiv.innerText || "";
+    
+    // Verifică dacă există text real (nu doar spații, <br>, <p></p>, etc.)
+    const cleanText = textContent.replace(/\s+/g, ' ').trim();
+    
+    // Consideră valid dacă are cel puțin 1 caracter real
+    return cleanText.length > 0;
+  };
+
   const handleSend = async () => {
     // Scroll to top pe mobile pentru feedback vizual
     if (isMobile) {
@@ -166,8 +228,9 @@ const CreateList = ({ oferta }) => {
       return;
     }
     
-    if (!comunicat.trim()) {
-      showAlert("Te rog completează textul documentului.", "warning");
+    // Validare pentru Quill content - folosește funcția helper
+    if (!hasValidQuillContent(comunicat)) {
+      showAlert("Te rog completează conținutul documentului.", "warning");
       return;
     }
     
@@ -181,6 +244,11 @@ const CreateList = ({ oferta }) => {
       return;
     }
 
+    if (!purtatorCuvant.trim()) {
+      showAlert("Te rog selectează purtătorul de cuvânt.", "warning");
+      return;
+    }
+
     const templateIdPdf = "1pWOmI_JNf__PkE3r7G68TmJshxblaEUT383xhhNdois";
     const templateIdWord = "12jLztiQvtEf46RKXZ1N3hCI-b_O4ko2hJ2xVZPkUYAk";
 
@@ -191,7 +259,9 @@ const CreateList = ({ oferta }) => {
         titlu: titlu.substring(0, 50) + "...",
         semnatar: semnatar.numeSemnatar,
         numar,
-        numarComunicat
+        numarComunicat,
+        comunicatLength: comunicat.length,
+        comunicatPreview: comunicat.substring(0, 100) + "..."
       });
       
       setLoading(true);
@@ -231,19 +301,20 @@ const CreateList = ({ oferta }) => {
       
       const t = `${numarComunicat} - ${firstTitlePart} - ${titlu}`;
       
-      // Creează documentData doar cu valorile valide (nu null/undefined)
+      // Creează documentData cu conținutul HTML din Quill (EXACT ca înainte)
       const documentData = {
         numar: numar,
         numarComunicat: numarComunicat,
         data: convertDateForDisplay(dataCurenta),
         nume: selectedItem,
         titlu: titlu,
-        comunicat: comunicat,
+        comunicat: comunicat, // Conținutul HTML din Quill
         numeAfisare: t,
         pentru: semnatar.pentru || "",
         functia: semnatar.functia || "",
         grad: semnatar.grad || "",
         numeSemnatar: semnatar.numeSemnatar || "",
+        "purtator-cuvant": purtatorCuvant || "",
       };
 
       // Adaugă linkurile doar dacă sunt valide
@@ -334,7 +405,7 @@ const CreateList = ({ oferta }) => {
         try {
           await setFirestoreItemWithRetry("numere", "ultimulNumar", { numar: nextNumar });
           await setFirestoreItemWithRetry("NumarComunicat", "ComunicatNumar", {
-            numarComunicat: nextNumarComuniicat,
+          numarComunicat: nextNumarComuniicat,
           });
           console.log("Numbers successfully saved to Firestore");
         } catch (saveError) {
@@ -414,7 +485,8 @@ const CreateList = ({ oferta }) => {
 
   // Funcție de test pentru API fără salvare în Firestore
   const testApiGeneration = async () => {
-    if (!selectedItem || !titlu.trim() || !comunicat.trim() || !semnatar.numeSemnatar) {
+    // Validare pentru Quill content cu funcția helper
+    if (!selectedItem || !titlu.trim() || !hasValidQuillContent(comunicat) || !semnatar.numeSemnatar) {
       showAlert("Te rog completează toate câmpurile pentru test.", "warning");
       return;
     }
@@ -443,21 +515,31 @@ const CreateList = ({ oferta }) => {
     }
   };
 
+  // Validare pentru submit button - validare mai permisivă pentru Quill
+  const isFormValid = () => {
+    if (!selectedItem || !titlu.trim() || !semnatar.numeSemnatar) {
+      return false;
+    }
+    
+    // Verifică conținutul Quill cu funcția helper
+    return hasValidQuillContent(comunicat);
+  };
+
   return (
     <div ref={formRef} style={mobileStyles.keyboardPadding}>
       <div className="row" style={mobileStyles.mobileForm}>
         {/* Numar Comunicat */}
-        <div className="col-lg-12">
-          <div className="my_profile_setting_input form-group">
+      <div className="col-lg-12">
+        <div className="my_profile_setting_input form-group">
             <label htmlFor="numarComunicat" style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '600' }}>
               Numar Comunicat
             </label>
-            <input
+          <input
               ref={titleRef}
-              type="text"
-              className="form-control"
+            type="text"
+            className="form-control"
               id="numarComunicat"
-              value={numarComunicat}
+            value={numarComunicat}
               onChange={(e) => setNumarComunicat(e.target.value)}
               onFocus={() => handleInputFocus(titleRef)}
               style={{
@@ -465,63 +547,63 @@ const CreateList = ({ oferta }) => {
                 fontSize: '16px', // Previne zoom pe iOS
               }}
               placeholder="Introduceți numărul comunicatului"
-            />
-          </div>
+          />
         </div>
+      </div>
 
         {/* Numar Inregistrare */}
-        <div className="col-lg-12">
-          <div className="my_profile_setting_input form-group">
+      <div className="col-lg-12">
+        <div className="my_profile_setting_input form-group">
             <label htmlFor="numarInregistrare" style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '600' }}>
               Numar Inregistrare
             </label>
-            <input
-              type="text"
-              className="form-control"
+          <input
+            type="text"
+            className="form-control"
               id="numarInregistrare"
-              value={numar}
+            value={numar}
               onChange={(e) => setNumar(e.target.value)}
               style={{
                 ...mobileStyles.mobileInput,
                 fontSize: '16px',
               }}
               placeholder="Introduceți numărul de înregistrare"
-            />
-          </div>
+          />
         </div>
+      </div>
 
         {/* Data */}
-        <div className="col-lg-12">
-          <div className="my_profile_setting_input form-group">
+      <div className="col-lg-12">
+        <div className="my_profile_setting_input form-group">
             <label htmlFor="data" style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '600' }}>
               Data
             </label>
-            <input
+          <input
               type="date"
-              className="form-control"
+            className="form-control"
               id="data"
-              value={dataCurenta}
+            value={dataCurenta}
               onChange={(e) => setDataCurenta(e.target.value)}
               style={{
                 ...mobileStyles.mobileInput,
                 fontSize: '16px',
               }}
-            />
-          </div>
+          />
         </div>
+      </div>
 
         {/* Tip document */}
         <div className="col-lg-12">
-          <div className="my_profile_setting_input ui_kit_select_search form-group">
+        <div className="my_profile_setting_input ui_kit_select_search form-group">
             <label style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '600' }}>
               Tip document
             </label>
-            <select
-              className="selectpicker form-select"
-              data-live-search="true"
-              data-width="100%"
-              value={selectedItem}
-              onChange={(e) => setSelectedItem(e.target.value)}
+          <select
+            className="selectpicker form-select"
+            data-live-search="true"
+            data-width="100%"
+            value={selectedItem}
+            onChange={(e) => setSelectedItem(e.target.value)}
               style={{
                 ...mobileStyles.mobileInput,
                 fontSize: '16px',
@@ -539,87 +621,109 @@ const CreateList = ({ oferta }) => {
               <option value="Anunț">Anunț</option>
               <option value="Eveniment de presă">Eveniment de presă</option>
               <option value="Drept la replică">Drept la replică</option>
-            </select>
-          </div>
+          </select>
         </div>
+      </div>
 
         {/* Semnatar */}
         <div className="col-lg-12">
-          <div className="my_profile_setting_input ui_kit_select_search form-group">
+        <div className="my_profile_setting_input ui_kit_select_search form-group">
             <label style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '600' }}>
               Semnatar
             </label>
-            <select
-              className="selectpicker form-select"
-              data-live-search="true"
-              data-width="100%"
-              value={semnatar?.numeSemnatar || ""}
-              onChange={(e) => {
-                const selectedSemnatar = array.find(
-                  (semn) => semn.numeSemnatar === e.target.value
-                );
+          <select
+            className="selectpicker form-select"
+            data-live-search="true"
+            data-width="100%"
+            value={semnatar?.numeSemnatar || ""}
+            onChange={(e) => {
+              const selectedSemnatar = array.find(
+                (semn) => semn.numeSemnatar === e.target.value
+              );
                 setSemnatar(selectedSemnatar || {});
               }}
               style={{
                 ...mobileStyles.mobileInput,
                 fontSize: '16px',
                 backgroundColor: 'white',
+            }}
+          >
+              <option value="">Selectează semnatar</option>
+            {array.map((semn, i) => (
+                <option key={i} value={semn.numeSemnatar}>
+                {semn.numeSemnatar}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+        {/* Purtator de cuvant */}
+        <div className="col-lg-12">
+          <div className="my_profile_setting_input form-group">
+            <label htmlFor="purtatorCuvant" style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '600' }}>
+              Purtător de cuvânt
+            </label>
+            <select
+              className="form-select"
+              id="purtatorCuvant"
+              value={purtatorCuvant}
+              onChange={e => setPurtatorCuvant(e.target.value)}
+              style={{
+                ...mobileStyles.mobileInput,
+                fontSize: '16px',
+                backgroundColor: 'white',
               }}
             >
-              <option value="">Selectează semnatar</option>
-              {array.map((semn, i) => (
-                <option key={i} value={semn.numeSemnatar}>
-                  {semn.numeSemnatar}
-                </option>
-              ))}
+              <option value="Locotenent Popescu Radu">Locotenent Popescu Radu</option>
+              <option value="plt.adj. Oprea Ovidiu">plt.adj. Oprea Ovidiu</option>
             </select>
           </div>
         </div>
 
         {/* Titlu */}
-        <div className="col-lg-12">
-          <div className="my_profile_setting_input form-group">
+      <div className="col-lg-12">
+        <div className="my_profile_setting_input form-group">
             <label htmlFor="titlu" style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '600' }}>
               Titlu
             </label>
-            <input
-              type="text"
-              className="form-control"
+          <input
+            type="text"
+            className="form-control"
               id="titlu"
-              value={titlu}
-              onChange={(e) => setTitlu(e.target.value)}
+            value={titlu}
+            onChange={(e) => setTitlu(e.target.value)}
               onFocus={() => handleInputFocus(titleRef)}
               style={{
                 ...mobileStyles.mobileInput,
                 fontSize: '16px',
               }}
               placeholder="Introduceți titlul documentului"
-            />
-          </div>
+          />
         </div>
+      </div>
 
-        {/* Text/Comunicat */}
-        <div className="col-lg-12">
-          <div className="my_profile_setting_textarea">
+        {/* Text/Comunicat cu React Quill */}
+      <div className="col-lg-12">
+        <div className="my_profile_setting_textarea">
             <label htmlFor="comunicat" style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '600' }}>
-              Text
+              Conținut Document
             </label>
-            <textarea
-              ref={contentRef}
-              className="form-control"
-              id="comunicat"
-              rows={isMobile ? "5" : "7"}
-              value={comunicat}
-              onChange={(e) => setComunicat(e.target.value)}
-              onFocus={() => handleInputFocus(contentRef)}
-              style={{
-                ...mobileStyles.mobileInput,
-                fontSize: '16px',
-                minHeight: isMobile ? '120px' : '160px',
-                resize: 'vertical',
-              }}
-              placeholder="Introduceți conținutul documentului..."
-            />
+            <div ref={quillRef} style={{ position: 'relative' }}>
+              <ReactQuill
+            value={comunicat}
+                onChange={handleQuillChange}
+                modules={quillModules}
+                formats={quillFormats}
+                placeholder="Introduceți conținutul documentului..."
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: '4px',
+                  fontSize: '16px',
+                }}
+                theme="snow"
+              />
+            </div>
           </div>
         </div>
 
@@ -651,27 +755,27 @@ const CreateList = ({ oferta }) => {
                 Duration: {debugInfo.duration}ms
               </div>
             )}
-          </div>
+      </div>
         )}
 
         {/* Submit Button */}
-        <div className="col-xl-12">
+      <div className="col-xl-12">
           <div className="my_profile_setting_input" style={{ marginTop: '20px' }}>
             {alert.message && (
               <div className={`alert alert-${alert.type} mb-3`} style={{
                 borderRadius: '8px',
                 fontSize: isMobile ? '14px' : '16px'
               }}>
-                {alert.message}
-              </div>
-            )}
+              {alert.message}
+            </div>
+          )}
             
             <button 
               onClick={handleSend} 
-              disabled={isLoading || !selectedItem || !titlu.trim() || !comunicat.trim()}
+              disabled={isLoading || !isFormValid()}
               style={{
                 ...mobileStyles.mobileButton,
-                backgroundColor: isLoading || !selectedItem || !titlu.trim() || !comunicat.trim() 
+                backgroundColor: isLoading || !isFormValid() 
                   ? '#6c757d' 
                   : '#007bff',
                 color: 'white',
@@ -703,9 +807,66 @@ const CreateList = ({ oferta }) => {
         onClose={closeAlert}
       />
 
-      {/* Mobile-specific styles */}
-      <style jsx>{`
+      {/* Mobile-specific styles + Quill customization */}
+      <style jsx global>{`
+        /* React Quill Customization */
+        .ql-editor {
+          min-height: ${isMobile ? '120px' : '160px'} !important;
+          font-size: 16px !important;
+          line-height: 1.5;
+          padding: 12px 15px;
+        }
+        
+        .ql-toolbar {
+          border-top: 1px solid #ccc !important;
+          border-left: 1px solid #ccc !important;
+          border-right: 1px solid #ccc !important;
+          border-bottom: none !important;
+          border-radius: 4px 4px 0 0 !important;
+          background-color: #f8f9fa;
+        }
+        
+        .ql-container {
+          border-left: 1px solid #ccc !important;
+          border-right: 1px solid #ccc !important;
+          border-bottom: 1px solid #ccc !important;
+          border-top: none !important;
+          border-radius: 0 0 4px 4px !important;
+          font-size: 16px !important;
+        }
+        
+        .ql-editor::before {
+          color: #6c757d;
+          font-style: italic;
+        }
+        
+        /* Mobile optimizations */
         @media (max-width: 767px) {
+          .ql-toolbar {
+            padding: 8px 6px !important;
+          }
+          
+          .ql-toolbar .ql-formats {
+            margin-right: 8px !important;
+          }
+          
+          .ql-toolbar button {
+            padding: 4px !important;
+            margin: 1px !important;
+          }
+          
+          .ql-editor {
+            font-size: 16px !important; /* Prevents zoom on iOS */
+            min-height: 120px !important;
+          }
+          
+          /* Better touch targets */
+          .ql-toolbar button,
+          .ql-toolbar .ql-picker {
+            min-height: 36px !important;
+            min-width: 36px !important;
+          }
+          
           .form-group {
             margin-bottom: 20px;
           }
@@ -753,6 +914,12 @@ const CreateList = ({ oferta }) => {
             transform: scale(0.98);
             transition: transform 0.1s ease;
           }
+        }
+        
+        /* Focus styles for better accessibility */
+        .ql-editor:focus {
+          outline: 2px solid #007bff;
+          outline-offset: 2px;
         }
       `}</style>
     </div>
