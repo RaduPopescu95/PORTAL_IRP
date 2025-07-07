@@ -30,7 +30,6 @@ const CreateList = ({ oferta }) => {
   const titleRef = useRef(null);
   const contentRef = useRef(null);
   const formRef = useRef(null);
-  const quillRef = useRef(null);
   
   const [selectedItem, setSelectedItem] = useState("");
   const [semnatar, setSemnatar] = useState({});
@@ -43,42 +42,6 @@ const CreateList = ({ oferta }) => {
   const [numarComunicat, setNumarComunicat] = useState("");
   const [alert, setAlert] = useState({ message: "", type: "" });
   const [purtatorCuvant, setPurtatorCuvant] = useState('Locotenent Popescu Radu');
-
-  // Configurația pentru React Quill
-  const quillModules = {
-    toolbar: {
-      container: [
-        [{ 'header': [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        [{ 'indent': '-1'}, { 'indent': '+1' }],
-        ['link'],
-        [{ 'align': [] }],
-        ['clean']
-      ],
-    },
-    clipboard: {
-      matchVisual: false,
-    }
-  };
-
-  const quillFormats = [
-    'header', 'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet', 'indent', 'link', 'align'
-  ];
-
-  // Funcție pentru gestionarea schimbării conținutului în Quill
-  const handleQuillChange = (content, delta, source, editor) => {
-    // Setează conținutul HTML direct
-    setComunicat(content);
-    
-    // Scroll pe mobile când utilizatorul scrie
-    if (isMobile && source === 'user' && quillRef.current) {
-      setTimeout(() => {
-        scrollToElement(quillRef.current, 100);
-      }, 100);
-    }
-  };
 
   const showAlert = (message, type) => {
     setAlert({ message, type });
@@ -703,27 +666,27 @@ const CreateList = ({ oferta }) => {
         </div>
       </div>
 
-        {/* Text/Comunicat cu React Quill */}
+        {/* Text/Comunicat cu textarea simplu */}
       <div className="col-lg-12">
         <div className="my_profile_setting_textarea">
             <label htmlFor="comunicat" style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '600' }}>
               Conținut Document
             </label>
-            <div ref={quillRef} style={{ position: 'relative' }}>
-              <ReactQuill
-            value={comunicat}
-                onChange={handleQuillChange}
-                modules={quillModules}
-                formats={quillFormats}
-                placeholder="Introduceți conținutul documentului..."
-                style={{
-                  backgroundColor: 'white',
-                  borderRadius: '4px',
-                  fontSize: '16px',
-                }}
-                theme="snow"
-              />
-            </div>
+            <textarea
+              id="comunicat"
+              className="form-control"
+              value={comunicat}
+              onChange={e => setComunicat(e.target.value)}
+              placeholder="Introduceți conținutul documentului..."
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '4px',
+                fontSize: '16px',
+                minHeight: isMobile ? '120px' : '160px',
+                padding: '12px 15px',
+                resize: 'vertical',
+              }}
+            />
           </div>
         </div>
 
