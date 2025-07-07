@@ -172,7 +172,7 @@ const index = ({ oferte, an }) => {
 
   return (
     <>
-      <CacheBuster />
+      {/* <CacheBuster /> */}
       {/* <!-- Main Header Nav --> */}
       <Header />
 
