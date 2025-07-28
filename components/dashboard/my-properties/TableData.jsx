@@ -15,6 +15,16 @@ import { deleteImage } from "@/utils/storageUtils";
 import { useCollectionPagination } from "@/hooks/useCollectionPagination";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { 
+  FaFileWord, 
+  FaFilePdf, 
+  FaCopy, 
+  FaTrashAlt, 
+  FaDownload,
+  FaClipboard,
+  FaFileAlt,
+  FaExclamationTriangle
+} from 'react-icons/fa';
 
 // CSS in JS pentru simbolurile tick și close
 const styles = {
@@ -88,110 +98,75 @@ const TableData = ({ oferte, onRefresh }) => {
   };
 
   if (!oferte || oferte.length === 0) {
-    return <p>Nu exista comunicate.</p>; // Show a message if no data
+    return (
+      <div className="no-data-message">
+        <div className="empty-state">
+          <h4><FaFileAlt /> Nu există comunicate</h4>
+          <p>Nu au fost găsite documente BICP pentru perioada selectată.</p>
+        </div>
+      </div>
+    );
   }
 
-  let theadConent = [];
-
-  if (isMobile) {
-    theadConent = ["Nume", "Actiune"];
-  } else {
-    theadConent = [
-      "Nume",
-      "Titlu",
-      "Numar",
-      "Data",
-      "Actiune",
-      "Copiaza continut",
-      "Șterge",
-    ];
-  }
-
-  let tbodyContent = oferte?.map((item) => (
-    <tr key={item.id}>
-      <td scope="row">
-        <div className="feat_property list favorite_page style2">
-          <div className="details d-flex justify-content-center">
-            <div className="tc_content d-flex align-items-center justify-content-center">
-              <h4>{item.numeAfisare}</h4>
+  let cardContent = oferte?.map((item) => (
+    <div key={item.id} className="bicp-card">
+      <div className="card-header">
+        <div className="document-type">
+          <span className="type-badge">{item.numeAfisare}</span>
+        </div>
+        <div className="document-number">
+          <span className="number-text">#{item.numar}</span>
+          <span className="date-text">{item.data}</span>
+        </div>
+      </div>
+      
+      <div className="card-body">
+        <h4 className="document-title">{item.titlu}</h4>
+        
+        <div className="card-actions">
+          <div className="download-section">
+            <h6><FaDownload /> Descarcă:</h6>
+            <div className="action-buttons">
+              <a href={item.wordLink} target="_blank" rel="noopener noreferrer" className="download-btn word-btn">
+                <FaFileWord /> WORD
+              </a>
+              <a href={item.pdfLink} target="_blank" rel="noopener noreferrer" className="download-btn pdf-btn">
+                <FaFilePdf /> PDF
+              </a>
+            </div>
+          </div>
+          
+          <div className="copy-section">
+            <h6><FaClipboard /> Copiază:</h6>
+            <div className="copy-buttons">
+              <button onClick={() => copyToClipboard(item.titlu)} className="copy-btn">
+                <FaCopy /> Titlu
+              </button>
+              <button onClick={() => copyToClipboard(item.comunicat)} className="copy-btn">
+                <FaCopy /> Conținut
+              </button>
             </div>
           </div>
         </div>
-      </td>
-      {/* End td */}
-
-      {!isMobile && <td>{item.titlu}</td>}
-      {/* End td */}
-
-      {!isMobile && <td>{item.numar}</td>}
-
-      {/* End td */}
-
-      {!isMobile && <td>{item.data}</td>}
-
-      {/* End td */}
-
-      <td>
-        <ul className="">
-          <li title="Download Word">
-            <a href={item.wordLink} target="_blank" rel="noopener noreferrer">WORD</a>
-          </li>
-          <li title="Download PDF">
-            <a href={item.pdfLink} target="_blank" rel="noopener noreferrer">PDF</a>
-          </li>
-        </ul>
-      </td>
-      {/* End td */}
+      </div>
       
-      {!isMobile && (
-        <td>
-          <ul className="">
-            <li title="Copy Title">
-              <button onClick={() => copyToClipboard(item.titlu)}>
-                Copiaza titlu
-              </button>
-            </li>
-            <li title="Copy Content">
-              <button onClick={() => copyToClipboard(item.comunicat)}>
-                Copiaza continut
-              </button>
-            </li>
-          </ul>
-        </td>
-      )}
-      {/* End td */}
-
-      {!isMobile && (
-        <td>
-          <button 
-            className="btn btn-danger btn-sm"
-            onClick={() => handleDeleteClick(item)}
-            title="Șterge document"
-          >
-            🗑️ Șterge
-          </button>
-        </td>
-      )}
-      {/* End td */}
-    </tr>
+      <div className="card-footer">
+        <button 
+          className="delete-btn"
+          onClick={() => handleDeleteClick(item)}
+          title="Șterge document"
+        >
+          <FaTrashAlt /> Șterge Document
+        </button>
+      </div>
+    </div>
   ));
 
   return (
     <>
-      <table className="table">
-        <thead className="thead-light">
-          <tr>
-            {theadConent.map((value, i) => (
-              <th scope="col" key={i}>
-                {value}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        {/* End theaad */}
-
-        <tbody>{tbodyContent}</tbody>
-      </table>
+      <div className="bicp-cards-container">
+        {cardContent}
+      </div>
 
       {showModal && (
         <DeleteDialog

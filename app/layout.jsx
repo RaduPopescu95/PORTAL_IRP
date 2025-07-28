@@ -31,23 +31,22 @@ export default function RootLayout({ children }) {
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-config" content="/icons/browserconfig.xml" />
-        <meta name="msapplication-TileColor" content="#007bff" />
+        <meta name="msapplication-TileColor" content="#2563eb" />
         <meta name="msapplication-tap-highlight" content="no" />
-        <meta name="theme-color" content="#007bff" />
+        <meta name="theme-color" content="#2563eb" />
         
         {/* Manifest */}
         <link rel="manifest" href="/manifest.json" />
         
         {/* Favicon and Icons */}
-        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
-        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/app-logo.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/app-logo-192.png" />
+        <link rel="shortcut icon" href="/app-logo.png" />
         
         {/* Apple Touch Icons */}
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
-        <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png" />
+        <link rel="apple-touch-icon" href="/app-logo-192.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/app-logo.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/app-logo-192.png" />
         
         {/* Splash Screens for iOS */}
         <link rel="apple-touch-startup-image" href="/icons/apple-splash-2048-2732.jpg" sizes="2048x2732" />

@@ -111,7 +111,7 @@ const ListaBICPPage = async () => {
           data-server-fetch="true"
         />
         <MyProperties oferte={oferte[2025] || []} an={"2025"} />
-        <MyProperties oferte={oferte[2024] || []} an={"2024"} />
+        {/* <MyProperties oferte={oferte[2024] || []} an={"2024"} /> */}
       </>
     );
   } catch (error) {

@@ -10,6 +10,8 @@ import DetailedInfo from "./DetailedInfo";
 import FloorPlans from "./FloorPlans";
 import LocationField from "./LocationField";
 import PropertyMediaUploader from "./PropertyMediaUploader";
+import "../../modern-dashboard.css";
+import "../../common/header/dashboard/modern-sidebar.css";
 
 const index = () => {
   return (
@@ -67,10 +69,11 @@ const index = () => {
                   <div className="my_dashboard_review">
                     <div className="row">
                       <div className="col-lg-12">
-                        <h3 className="mb30">Creaza BICP</h3>
+                        <div className="form-section">
+                          <h3>Creaza BICP</h3>
+                          <CreateList />
+                        </div>
                       </div>
-
-                      <CreateList />
                     </div>
                   </div>
                   {/* <div className="my_dashboard_review mt30">

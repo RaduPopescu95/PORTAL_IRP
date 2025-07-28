@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 export function useDataWithPaginationAndSearch(
   data,
   searchField,
-  itemsPerPage = 6
+  itemsPerPage = 10
 ) {
   const [currentPage, setCurrentPage] = useState(1);
   const [currentData, setCurrentData] = useState([]);

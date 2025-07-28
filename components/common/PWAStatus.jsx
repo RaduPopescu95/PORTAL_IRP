@@ -8,15 +8,7 @@ const PWAStatus = () => {
   return (
     <div className="pwa-status">
       {/* Connection Status */}
-      <div className={`connection-indicator ${isOnline ? 'online' : 'offline'}`}>
-        <span className="status-icon">
-          {isOnline ? '🟢' : '🔴'}
-        </span>
-        <span className="status-text">
-          {isOnline ? 'Online' : 'Offline'}
-        </span>
-      </div>
-
+   
       {/* Install Button - only show if installable and not installed */}
       {isInstallable && !isInstalled && (
         <button 

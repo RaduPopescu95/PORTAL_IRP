@@ -6,10 +6,13 @@ import MobileMenu from "../../common/header/MobileMenu";
 import Filtering from "./Filtering";
 import Pagination from "./Pagination";
 import TableData from "./TableData";
+import TableView from "./TableView";
 import SearchBox from "./SearchBox";
 import { handleGetFirestore } from "@/utils/firestoreUtils";
 import { useAuth } from "@/context/AuthContext";
 import CacheBuster from "@/components/common/CacheBuster";
+import "../../modern-dashboard.css";
+import "../../common/header/dashboard/modern-sidebar.css";
 
 import { db } from "@/firebase";
 import { useEffect, useState } from "react";
@@ -27,6 +30,7 @@ import {
 } from "firebase/firestore";
 import { useCollectionPagination } from "@/hooks/useCollectionPagination";
 import { useDataWithPaginationAndSearch } from "@/hooks/useDataWithPaginationAndSearch";
+import { FaRedoAlt, FaTh, FaTable, FaMobile, FaDesktop } from 'react-icons/fa';
 
 const index = ({ oferte, an }) => {
   console.log("oferte....", oferte);
@@ -35,6 +39,20 @@ const index = ({ oferte, an }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentFilters, setCurrentFilters] = useState({});
   const [lastRefresh, setLastRefresh] = useState(Date.now());
+  const [viewMode, setViewMode] = useState(() => {
+    // Încarcă preferința din localStorage sau defaultează la "cards"
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("bicpViewMode") || "cards";
+    }
+    return "cards";
+  }); // "cards" sau "table"
+
+  // Salvează preferința în localStorage când se schimbă view mode
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("bicpViewMode", viewMode);
+    }
+  }, [viewMode]);
 
   const {
     currentData,
@@ -43,6 +61,48 @@ const index = ({ oferte, an }) => {
     setSearchTerm: setPaginationSearchTerm,
     currentPage,
   } = useDataWithPaginationAndSearch(filteredData, "titlu");
+
+  // Funcție pentru copierea textului în clipboard
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("Textul a fost copiat: " + text);
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
+
+  // Funcție pentru descărcarea documentelor
+  const handleTestJournal = (itemId, format) => {
+    const item = currentData.find(item => item.id === itemId);
+    if (item) {
+      if (format === "DOCX" && item.wordLink) {
+        window.open(item.wordLink, '_blank');
+      } else if (format === "PDF" && item.pdfLink) {
+        window.open(item.pdfLink, '_blank');
+      } else {
+        alert(`Link-ul pentru ${format} nu este disponibil.`);
+      }
+    }
+  };
+
+  // Funcție pentru ștergerea documentelor
+  const deleteItem = async (itemId) => {
+    if (window.confirm("Sigur doriți să ștergeți acest document?")) {
+      try {
+        console.log("Deleting BICP item with ID:", itemId);
+        
+        const { deleteFirestoreItem } = await import("@/utils/firestoreUtils");
+        await deleteFirestoreItem("Comunicate", itemId);
+        
+        // Actualizează datele după ștergere
+        handleRefresh();
+      } catch (error) {
+        console.error("Error deleting BICP item:", error);
+        alert("Eroare la ștergerea documentului!");
+      }
+    }
+  };
 
   // Funcție pentru refresh forțat fără cache
   const forceRefresh = () => {
@@ -93,14 +153,14 @@ const index = ({ oferte, an }) => {
     // Aplicare filtru număr minim
     if (filters.numarMin) {
       filtered = filtered.filter(item => 
-        parseInt(item.numar) >= parseInt(filters.numarMin)
+        Number(item.numar) >= Number(filters.numarMin)
       );
     }
 
     // Aplicare filtru număr maxim
     if (filters.numarMax) {
       filtered = filtered.filter(item => 
-        parseInt(item.numar) <= parseInt(filters.numarMax)
+        Number(item.numar) <= Number(filters.numarMax)
       );
     }
 
@@ -115,12 +175,12 @@ const index = ({ oferte, an }) => {
             bVal = convertDateFormat(b.data);
             break;
           case 'numar':
-            aVal = parseInt(a.numar);
-            bVal = parseInt(b.numar);
+            aVal = Number(a.numar) || 0;
+            bVal = Number(b.numar) || 0;
             break;
           case 'numarComunicat':
-            aVal = parseInt(a.numarComunicat);
-            bVal = parseInt(b.numarComunicat);
+            aVal = Number(a.numarComunicat) || 0;
+            bVal = Number(b.numarComunicat) || 0;
             break;
           case 'titlu':
             aVal = a.titlu?.toLowerCase() || '';
@@ -215,7 +275,7 @@ const index = ({ oferte, an }) => {
                 </div>
                 {/* End Dashboard Navigation */}
 
-                <div className="col-lg-4 col-xl-4 mb10">
+                <div className="col-lg-12 mb10">
                   <div className="breadcrumb_content style2 mb30-991">
                     <h2 className="breadcrumb_title">Lista BI/CP {an}</h2>
                     <p>Total: {filteredData.length} documente</p>
@@ -224,37 +284,68 @@ const index = ({ oferte, an }) => {
                       className="btn btn-sm btn-outline-primary mt-2"
                       title="Reîmprospătează datele"
                     >
-                      🔄 Actualizează
+                      <FaRedoAlt /> Actualizează
                     </button>
                   </div>
                 </div>
                 {/* End .col */}
 
-                <div className="col-lg-8 col-xl-8">
-                  <div className="candidate_revew_select style2 text-end mb30-991">
-                    <ul className="mb0">
-                      <li className="list-inline-item">
-                        <div className="candidate_revew_search_box course fn-520">
-                          <SearchBox onSearch={handleSearchChange} />
-                        </div>
-                      </li>
-                      {/* End li */}
-                    </ul>
-                  </div>
-                </div>
-                {/* End .col */}
+
 
                 {/* Filtering Section */}
                 <div className="col-lg-12 mb-4">
-                  <Filtering onFilterChange={handleFilterChange} />
+                  <div className="form-section">
+                    <Filtering onFilterChange={handleFilterChange} />
+                  </div>
                 </div>
                 {/* End Filtering */}
+
+                {/* Search Section */}
+                <div className="col-lg-12 mb-4">
+                  <SearchBox onSearch={handleSearchChange} />
+                </div>
+                {/* End Search */}
+
+                {/* View Mode Toggle */}
+                <div className="col-lg-12 mb-4">
+                  <div className="view-toggle-container">
+                    <div className="view-toggle-wrapper">
+                      <span className="toggle-label">Mod afișare:</span>
+                      <div className="view-toggle-buttons">
+                        <button
+                          className={`view-toggle-btn ${viewMode === "cards" ? "active" : ""}`}
+                          onClick={() => setViewMode("cards")}
+                          title="Afișare Cards (optimizat mobile)"
+                        >
+                          <FaTh /> Cards
+                        </button>
+                        <button
+                          className={`view-toggle-btn ${viewMode === "table" ? "active" : ""}`}
+                          onClick={() => setViewMode("table")}
+                          title="Afișare Tabel (desktop)"
+                        >
+                          <FaTable /> Tabel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* End View Mode Toggle */}
 
                 <div className="col-lg-12">
                   <div className="my_dashboard_review mb40">
                     <div className="property_table">
                       <div className="table-responsive mt0">
-                        <TableData oferte={currentData} an={an} />
+                        {viewMode === "cards" ? (
+                          <TableData oferte={currentData} an={an} />
+                        ) : (
+                          <TableView 
+                            oferte={currentData}
+                            handleTestJournal={handleTestJournal}
+                            deleteItem={deleteItem}
+                            copyToClipboard={copyToClipboard}
+                          />
+                        )}
                       </div>
                       {/* End .table-responsive */}
 

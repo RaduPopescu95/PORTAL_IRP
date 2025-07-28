@@ -490,7 +490,7 @@ const CreateList = ({ oferta }) => {
 
   return (
     <div ref={formRef} style={mobileStyles.keyboardPadding}>
-      <div className="row" style={mobileStyles.mobileForm}>
+      <div className="row form-style1" style={mobileStyles.mobileForm}>
         {/* Numar Comunicat */}
       <div className="col-lg-12">
         <div className="my_profile_setting_input form-group">
@@ -562,9 +562,7 @@ const CreateList = ({ oferta }) => {
               Tip document
             </label>
           <select
-            className="selectpicker form-select"
-            data-live-search="true"
-            data-width="100%"
+            className="form-control"
             value={selectedItem}
             onChange={(e) => setSelectedItem(e.target.value)}
               style={{
@@ -595,9 +593,7 @@ const CreateList = ({ oferta }) => {
               Semnatar
             </label>
           <select
-            className="selectpicker form-select"
-            data-live-search="true"
-            data-width="100%"
+            className="form-control"
             value={semnatar?.numeSemnatar || ""}
             onChange={(e) => {
               const selectedSemnatar = array.find(
@@ -628,7 +624,7 @@ const CreateList = ({ oferta }) => {
               Purtător de cuvânt
             </label>
             <select
-              className="form-select"
+              className="form-control"
               id="purtatorCuvant"
               value={purtatorCuvant}
               onChange={e => setPurtatorCuvant(e.target.value)}
@@ -697,16 +693,16 @@ const CreateList = ({ oferta }) => {
               <button
                 type="button" 
                 onClick={testFirestoreConnection}
-                className="btn btn-outline-info btn-sm"
-                style={{ fontSize: '12px' }}
+                className="btn-modern-secondary"
+                style={{ fontSize: '12px', padding: '6px 12px' }}
               >
                 🔧 Test Firestore
               </button>
               <button
                 type="button" 
                 onClick={testApiGeneration}
-                className="btn btn-outline-secondary btn-sm"
-                style={{ fontSize: '12px' }}
+                className="btn-modern-secondary"
+                style={{ fontSize: '12px', padding: '6px 12px' }}
               >
                 🧪 Test API
               </button>
@@ -724,15 +720,6 @@ const CreateList = ({ oferta }) => {
         {/* Submit Button */}
       <div className="col-xl-12">
           <div className="my_profile_setting_input" style={{ marginTop: '20px' }}>
-            {alert.message && (
-              <div className={`alert alert-${alert.type} mb-3`} style={{
-                borderRadius: '8px',
-                fontSize: isMobile ? '14px' : '16px'
-              }}>
-              {alert.message}
-            </div>
-          )}
-            
             <button 
               onClick={handleSend} 
               disabled={isLoading || !isFormValid()}
@@ -740,14 +727,14 @@ const CreateList = ({ oferta }) => {
                 ...mobileStyles.mobileButton,
                 backgroundColor: isLoading || !isFormValid() 
                   ? '#6c757d' 
-                  : '#007bff',
+                  : '#2563eb',
                 color: 'white',
                 border: 'none',
                 marginTop: isMobile ? '16px' : '0',
                 opacity: isLoading ? 0.7 : 1,
                 cursor: isLoading ? 'not-allowed' : 'pointer',
               }}
-              className={`btn ${isMobile ? 'w-100' : 'float-end'}`}
+              className={`btn-modern-primary ${isMobile ? 'w-100' : 'float-end'}`}
             >
               {isLoading ? (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>

@@ -13,6 +13,7 @@ import { authentication } from "@/firebase";
 import ReactDOM from "react-dom";
 import React from "react";
 import PWAStatus from "@/components/common/PWAStatus";
+import "./modern-sidebar.css";
 
 // Componenta de overlay care acoperă tot ecranul
 const LoadingOverlay = () => {
@@ -75,8 +76,21 @@ const SidebarMenu = ({ partenerId }) => {
     <>
       <ul className="sidebar-menu">
         <li className="sidebar_header header">
-          <div style={{ padding: "10px 15px", borderBottom: "1px solid #e9ecef" }}>
-            <PWAStatus />
+          <div className="sidebar-logo-section">
+            <div className="logo-container">
+              <img 
+                src="/app-logo.png" 
+                alt="Portal IRP Logo" 
+                className="sidebar-logo"
+              />
+              <div className="logo-text">
+                <h3>Portal IRP</h3>
+                <span>ISU Dashboard</span>
+              </div>
+            </div>
+            <div className="pwa-status-container">
+              <PWAStatus />
+            </div>
           </div>
         </li>
         <li className="title">

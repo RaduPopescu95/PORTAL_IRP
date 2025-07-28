@@ -16,6 +16,7 @@
     "@mui/material": "^6.4.6",
     "@react-google-maps/api": "^2.20.6",
     "@reduxjs/toolkit": "^1.9.6",
+    "@tailwindcss/postcss": "^4.1.11",
     "bootstrap": "^5.2.1",
     "browser-image-compression": "^2.0.2",
     "chart.js": "^4.4.0",
@@ -44,5 +45,10 @@
     "sass": "^1.68.0",
     "slick-carousel": "^1.8.1",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11"
   }
 }
