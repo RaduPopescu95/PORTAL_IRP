@@ -34,14 +34,14 @@ const index = () => {
                 {/* End .col */}
 
                 <div className="col-lg-12">
-                  <div className="my_dashboard_review">
+                  {/* <div className="my_dashboard_review"> */}
                     <div className="row">
                       <div className="col-lg-12">
                         <div className="form-section">
                           <h3>Creaza BICP</h3>
                           <CreateList />
                         </div>
-                      </div>
+                      {/* </div> */}
                     </div>
                   </div>
                   {/* <div className="my_dashboard_review mt30">

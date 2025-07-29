@@ -68,7 +68,7 @@ const PWAInstallPrompt = () => {
             <h3>Instalează Portal IRP</h3>
             <p>
               Generează documente BICP și acreditări direct de pe telefonul tău! 
-              Funcționează și offline.
+              
             </p>
             
             <div className="pwa-features">
