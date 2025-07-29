@@ -2,7 +2,7 @@
   "name": "Portal IRP - Inspectoratul pentru Situații de Urgență",
   "short_name": "Portal IRP",
   "description": "Portal pentru gestionarea BICP și acreditărilor - ISU",
-  "start_url": "/panou-principal?source=pwa",
+  "start_url": "/lista-BICP?source=pwa",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",

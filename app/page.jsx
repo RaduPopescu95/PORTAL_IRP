@@ -1,6 +1,6 @@
 import Wrapper from "@/components/layout/Wrapper";
 import HomeMain from "./(homes)/home-4/page";
-import PanouPartener from "./(admin-irp)/panou-principal/page";
+import ListaBICP from "./(admin-irp)/lista-BICP/page";
 import { AuthProvider } from "@/context/AuthContext";
 import MapContainer from "./(admin-irp)/harta/page";
 
@@ -13,7 +13,7 @@ import MapContainer from "./(admin-irp)/harta/page";
 export default function Home() {
   return (
     <Wrapper>
-      <PanouPartener />
+      <ListaBICP />
       {/* <MapContainer/> */}
     </Wrapper>
   );
