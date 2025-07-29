@@ -14067,8 +14067,9 @@ legend span {
 }
 
 .our-dashbord.dashbord {
-  padding-top: 145px;
-  padding-left: 295px;
+  /* padding-top: 145px; */
+  /* padding-left: 295px; */
+  padding:50px
 }
 
 .our-dashbord.dashbord .container-fluid {

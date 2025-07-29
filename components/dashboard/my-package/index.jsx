@@ -74,7 +74,7 @@ const index = () => {
                   <div className="my_dashboard_review mb40">
                     <div className="col-lg-12">
                       <div className="packages_table">
-                        <div className="table-responsive mt0">
+                        <div className="table-responsive p-3">
                           <PackageData />
                         </div>
                       </div>

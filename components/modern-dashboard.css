@@ -66,6 +66,195 @@
   margin-right: 6px;
 }
 
+/* Filter Toggle Button Styles */
+.filter-toggle-header {
+  margin-bottom: 16px;
+}
+
+.filter-toggle-btn {
+  width: 100%;
+  background: var(--dashboard-bg-card);
+  border: 1px solid var(--dashboard-border);
+  border-radius: var(--dashboard-radius-lg);
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--dashboard-shadow);
+}
+
+.filter-toggle-btn:hover {
+  border-color: var(--dashboard-primary);
+  box-shadow: var(--dashboard-shadow-lg);
+  transform: translateY(-1px);
+}
+
+.filter-toggle-btn.active {
+  border-color: var(--dashboard-primary);
+  background: linear-gradient(135deg, var(--dashboard-primary) 0%, var(--dashboard-primary-light) 100%);
+  color: white;
+}
+
+.filter-toggle-btn.has-filters {
+  border-color: var(--dashboard-primary);
+  background: var(--dashboard-active);
+}
+
+.filter-toggle-btn.has-filters.active {
+  background: linear-gradient(135deg, var(--dashboard-primary) 0%, var(--dashboard-primary-light) 100%);
+}
+
+.toggle-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle-icon {
+  font-size: 1.25rem;
+  color: var(--dashboard-primary);
+}
+
+.filter-toggle-btn.active .toggle-icon {
+  color: white;
+}
+
+.toggle-text {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--dashboard-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-toggle-btn.active .toggle-text {
+  color: white;
+}
+
+.active-indicator {
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  font-size: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite;
+}
+
+.filter-toggle-btn.active .active-indicator {
+  background: white;
+  color: var(--dashboard-primary);
+}
+
+.toggle-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quick-reset-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+}
+
+.quick-reset-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.filter-toggle-btn.active .quick-reset-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.filter-toggle-btn.active .quick-reset-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.toggle-right svg:last-child {
+  font-size: 1rem;
+  color: var(--dashboard-text-light);
+  transition: transform 0.3s ease;
+}
+
+.filter-toggle-btn.active .toggle-right svg:last-child {
+  color: white;
+  transform: rotate(180deg);
+}
+
+/* Filter Advanced Section */
+.filter-advanced-section {
+  background: var(--dashboard-bg-card);
+  border: 1px solid var(--dashboard-border);
+  border-radius: var(--dashboard-radius-lg);
+  box-shadow: var(--dashboard-shadow);
+  overflow: hidden;
+  animation: slideDown 0.3s ease;
+  margin-top: 8px;
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Slide Down Animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+}
+
+/* Responsive pentru filter toggle */
+@media (max-width: 768px) {
+  .filter-toggle-btn {
+    padding: 14px 16px;
+  }
+  
+  .toggle-text {
+    font-size: 0.875rem;
+  }
+  
+  .toggle-icon {
+    font-size: 1.1rem;
+  }
+  
+  .quick-reset-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 0.7rem;
+  }
+}
+
 /* View Mode Toggle Styles */
 .view-toggle-container {
   background: var(--dashboard-bg-card);
@@ -638,12 +827,24 @@
   transform: scale(1.02);
 }
 
+/* Cards Container - wrapper pentru cards mode */
+.cards-container {
+  margin-bottom: 32px;
+}
+
 /* BICP Cards Container */
 .bicp-cards-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 24px;
   padding: 0;
+  margin-bottom: 0;
+}
+
+/* Pagination Container */
+.pagination-container {
+  margin-top: 32px;
+  margin-bottom: 24px;
 }
 
 /* Individual BICP Card */

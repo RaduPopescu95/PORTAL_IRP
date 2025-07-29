@@ -121,7 +121,7 @@ const TableData = ({ oferte, onRefresh }) => {
       </div>
       
       <div className="card-body">
-        <h4 className="document-title">{item.titlu}</h4>
+        <h4 className="document-title">{item.numar}-{item.numeAfisare}-{item.titlu}</h4>
         
         <div className="card-actions">
           <div className="download-section">

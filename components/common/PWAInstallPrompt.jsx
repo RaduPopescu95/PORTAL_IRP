@@ -78,11 +78,7 @@ const PWAInstallPrompt = () => {
               </div>
               <div className="pwa-feature">
                 <span className="feature-icon">📱</span>
-                <span>Experiență nativă</span>
-              </div>
-              <div className="pwa-feature">
-                <span className="feature-icon">🔄</span>
-                <span>Funcționează offline</span>
+                <span>Experiență nativă mobilă</span>
               </div>
             </div>
           </div>

@@ -21,13 +21,7 @@ const PWAStatus = () => {
         </button>
       )}
 
-      {/* Installed Indicator */}
-      {isInstalled && (
-        <div className="installed-indicator">
-          <span className="installed-icon">✅</span>
-          <span className="installed-text">Instalată</span>
-        </div>
-      )}
+
 
       <style jsx>{`
         .pwa-status {

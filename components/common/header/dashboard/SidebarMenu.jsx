@@ -13,7 +13,7 @@ import { authentication } from "@/firebase";
 import ReactDOM from "react-dom";
 import React from "react";
 import PWAStatus from "@/components/common/PWAStatus";
-import "./modern-sidebar.css";
+
 
 // Componenta de overlay care acoperă tot ecranul
 const LoadingOverlay = () => {

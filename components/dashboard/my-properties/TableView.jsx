@@ -14,7 +14,7 @@ const TableView = ({
     <tr key={item.id}>
       <td className="vam">
         <span className="document-type">
-          {item.tipDocument} - {item.clasificareCodDoc} - {item.numeDocument}
+          {item.numar}-{item.numeAfisare}-{item.titlu}
         </span>
       </td>
       <td className="vam">

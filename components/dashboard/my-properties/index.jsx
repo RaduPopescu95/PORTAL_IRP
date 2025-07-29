@@ -1,8 +1,6 @@
 "use client";
 
-import Header from "../../common/header/dashboard/Header";
-import SidebarMenu from "../../common/header/dashboard/SidebarMenu";
-import MobileMenu from "../../common/header/MobileMenu";
+import TopNavbar from "../../common/header/dashboard/TopNavbar";
 import Filtering from "./Filtering";
 import Pagination from "./Pagination";
 import TableData from "./TableData";
@@ -12,7 +10,7 @@ import { handleGetFirestore } from "@/utils/firestoreUtils";
 import { useAuth } from "@/context/AuthContext";
 import CacheBuster from "@/components/common/CacheBuster";
 import "../../modern-dashboard.css";
-import "../../common/header/dashboard/modern-sidebar.css";
+
 
 import { db } from "@/firebase";
 import { useEffect, useState } from "react";
@@ -233,47 +231,16 @@ const index = ({ oferte, an }) => {
   return (
     <>
       {/* <CacheBuster /> */}
-      {/* <!-- Main Header Nav --> */}
-      <Header />
-
-      {/* <!--  Mobile Menu --> */}
-      <MobileMenu />
-
-      <div className="dashboard_sidebar_menu">
-        <div
-          className="offcanvas offcanvas-dashboard offcanvas-start"
-          tabIndex="-1"
-          id="DashboardOffcanvasMenu"
-          data-bs-scroll="true"
-        >
-          <SidebarMenu />
-        </div>
-      </div>
-      {/* End sidebar_menu */}
+      {/* Top Navigation */}
+              {/* Top & Bottom Navigation */}
+        <TopNavbar />
 
       {/* <!-- Our Dashbord --> */}
       <section className="our-dashbord dashbord bgc-f7 pb50">
         <div className="container-fluid ovh">
           <div className="row">
             <div className="col-lg-12 maxw100flex-992">
-              <div className="row">
-                {/* Start Dashboard Navigation */}
-                <div className="col-lg-12">
-                  <div className="dashboard_navigationbar dn db-1024">
-                    <div className="dropdown">
-                      <button
-                        className="dropbtn"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#DashboardOffcanvasMenu"
-                        aria-controls="DashboardOffcanvasMenu"
-                      >
-                        <i className="fa fa-bars pr10"></i> Navigatie panou de
-                        administrare
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                {/* End Dashboard Navigation */}
+              <div className="row">{/* End Dashboard Navigation */}
 
                 <div className="col-lg-12 mb10">
                   <div className="breadcrumb_content style2 mb30-991">
@@ -294,9 +261,7 @@ const index = ({ oferte, an }) => {
 
                 {/* Filtering Section */}
                 <div className="col-lg-12 mb-4">
-                  <div className="form-section">
-                    <Filtering onFilterChange={handleFilterChange} />
-                  </div>
+                  <Filtering onFilterChange={handleFilterChange} />
                 </div>
                 {/* End Filtering */}
 
@@ -333,32 +298,31 @@ const index = ({ oferte, an }) => {
                 {/* End View Mode Toggle */}
 
                 <div className="col-lg-12">
-                  <div className="my_dashboard_review mb40">
-                    <div className="property_table">
-                      <div className="table-responsive mt0">
-                        {viewMode === "cards" ? (
-                          <TableData oferte={currentData} an={an} />
-                        ) : (
+                  {viewMode === "cards" ? (
+                    <div className="cards-container">
+                      <TableData oferte={currentData} an={an} />
+                    </div>
+                  ) : (
+                    <div className="my_dashboard_review mb40">
+                      <div className="property_table">
+                        <div className="table-responsive mt0">
                           <TableView 
                             oferte={currentData}
                             handleTestJournal={handleTestJournal}
                             deleteItem={deleteItem}
                             copyToClipboard={copyToClipboard}
                           />
-                        )}
+                        </div>
                       </div>
-                      {/* End .table-responsive */}
-
-                      <div className="mbp_pagination">
-                        <Pagination
-                          currentPage={currentPage}
-                          totalPages={totalPages}
-                          setCurrentPage={setCurrentPage}
-                        />
-                      </div>
-                      {/* {/* End .mbp_pagination */}
                     </div>
-                    {/* End .property_table */}
+                  )}
+
+                  <div className="pagination-container">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      setCurrentPage={setCurrentPage}
+                    />
                   </div>
                 </div>
                 {/* End .col */}
