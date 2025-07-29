@@ -526,6 +526,11 @@
   overflow: hidden;
 }
 
+/* Container simplu pentru tabele fără styling de card duplicat */
+.table-container {
+  margin-bottom: 2rem;
+}
+
 .my_dashboard_review h3 {
   color: var(--dashboard-text);
   font-size: 1.25rem;
@@ -637,22 +642,25 @@
 
 /* Stilizare tabele moderne */
 .property_table {
-  padding: 32px;
+  padding: 0px;
 }
 
 .table-responsive {
-  border-radius: var(--dashboard-radius);
-  overflow: hidden;
-  border: 1px solid var(--dashboard-border);
-  box-shadow: var(--dashboard-shadow);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.property_table table {
-  background: var(--dashboard-bg);
+/* Stiluri pentru tabelul din container */
+.table-container table {
+  background: var(--dashboard-bg-card);
+  border-radius: var(--dashboard-radius);
+  box-shadow: var(--dashboard-shadow);
+  border: 1px solid var(--dashboard-border);
   border-collapse: separate;
   border-spacing: 0;
   width: 100%;
   margin: 0;
+  overflow: hidden;
 }
 
 .property_table table thead th {
@@ -845,6 +853,225 @@
 .pagination-container {
   margin-top: 32px;
   margin-bottom: 24px;
+}
+
+/* Modern Pagination Wrapper */
+.modern-pagination-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: 32px 0;
+  padding: 0 16px;
+}
+
+/* Pagination Info (Desktop) */
+.pagination-info {
+  font-size: 14px;
+  color: var(--dashboard-text-muted);
+  font-weight: 500;
+}
+
+/* Modern Pagination Navigation */
+.modern-pagination {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.pagination-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Pagination Items */
+.pagination-item {
+  display: inline-flex;
+}
+
+.pagination-item.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Pagination Buttons */
+.pagination-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 8px 12px;
+  border: 2px solid var(--dashboard-border);
+  border-radius: var(--dashboard-radius);
+  background: var(--dashboard-bg-card);
+  color: var(--dashboard-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  gap: 6px;
+}
+
+.pagination-button:hover {
+  border-color: var(--dashboard-primary);
+  background: var(--dashboard-primary-light);
+  color: var(--dashboard-primary);
+  transform: translateY(-1px);
+}
+
+.pagination-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination-button:disabled:hover {
+  transform: none;
+  border-color: var(--dashboard-border);
+  background: var(--dashboard-bg-card);
+  color: var(--dashboard-text);
+}
+
+/* Active Page Button */
+.pagination-item.active .pagination-button {
+  background: var(--dashboard-primary);
+  border-color: var(--dashboard-primary);
+  color: white;
+  font-weight: 600;
+}
+
+.pagination-item.active .pagination-button:hover {
+  background: var(--dashboard-primary-dark);
+  border-color: var(--dashboard-primary-dark);
+  color: white;
+}
+
+/* Navigation Buttons (Previous/Next) */
+.pagination-nav {
+  font-weight: 600;
+  min-width: auto;
+  padding: 8px 16px;
+}
+
+/* Number Buttons */
+.pagination-number {
+  min-width: 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  padding: 0;
+}
+
+/* Ellipsis */
+.pagination-dots {
+  pointer-events: none;
+}
+
+.pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--dashboard-text-muted);
+  font-size: 12px;
+}
+
+/* Mobile Info */
+.pagination-mobile-info {
+  font-size: 14px;
+  color: var(--dashboard-text-muted);
+  font-weight: 500;
+  text-align: center;
+  padding: 8px 16px;
+  background: var(--dashboard-bg-light);
+  border-radius: var(--dashboard-radius);
+  border: 1px solid var(--dashboard-border);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modern-pagination-wrapper {
+    margin: 24px 0;
+    padding: 0 8px;
+  }
+
+  .pagination-list {
+    gap: 4px;
+    flex-wrap: wrap;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 8px 0;
+  }
+
+  .pagination-button {
+    min-width: 36px;
+    height: 36px;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .pagination-number {
+    min-width: 36px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .pagination-nav {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .pagination-ellipsis {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Hide text on very small screens */
+  @media (max-width: 480px) {
+    .pagination-nav span {
+      display: none;
+    }
+    
+    .pagination-nav {
+      min-width: 36px;
+      width: 36px;
+      padding: 6px;
+    }
+  }
+}
+
+/* Focus states for accessibility */
+.pagination-button:focus {
+  outline: 2px solid var(--dashboard-primary);
+  outline-offset: 2px;
+}
+
+.pagination-button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Animation for page transitions */
+.pagination-item {
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Individual BICP Card */
@@ -1679,4 +1906,78 @@
 .status-indicator.pending {
   background: rgba(249, 115, 22, 0.1);
   color: #ea580c;
+} 
+
+/* Stiluri pentru selecția multiplă */
+
+/* Cards Selection */
+.bicp-card.selected {
+  border: 2px solid #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+.card-select-checkbox {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  background: white;
+  border-radius: 50%;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-select-checkbox .form-check-input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  border: 2px solid var(--dashboard-border);
+}
+
+.card-select-checkbox .form-check-input:checked {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+/* Table Selection */
+.table-row-selected {
+  background: rgba(37, 99, 235, 0.1) !important;
+  border-left: 3px solid #2563eb;
+}
+
+.table-row-selected td {
+  background: rgba(37, 99, 235, 0.1) !important;
+}
+
+/* View Mode Toggle cu selecție */
+.view-mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.view-mode-toggle .btn-group {
+  flex-shrink: 0;
+}
+
+/* Responsive pentru selecția multiplă */
+@media (max-width: 768px) {
+  .view-mode-toggle {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .view-mode-toggle .btn-group {
+    justify-content: center;
+  }
+  
+  .card-select-checkbox {
+    top: 8px;
+    right: 8px;
+  }
 } 

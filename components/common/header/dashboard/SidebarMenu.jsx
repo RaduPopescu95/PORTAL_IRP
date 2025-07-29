@@ -7,9 +7,9 @@ import {
 } from "../../../../utils/daynamicNavigation";
 import { usePathname, useRouter } from "next/navigation";
 import { handleLogout } from "@/utils/authUtils";
+import { authentication } from "@/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
-import { authentication } from "@/firebase";
 import ReactDOM from "react-dom";
 import React from "react";
 import PWAStatus from "@/components/common/PWAStatus";
@@ -89,7 +89,7 @@ const SidebarMenu = ({ partenerId }) => {
               </div>
             </div>
             <div className="pwa-status-container">
-              <PWAStatus />
+            <PWAStatus />
             </div>
           </div>
         </li>
@@ -165,11 +165,17 @@ const SidebarMenu = ({ partenerId }) => {
               >
                 <Link
                   href={item.route}
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     if (item.name === "Deconectare") {
                       e.preventDefault();
-                      handleLogout();
-                      router.push("/signin");
+                      if (window.confirm("Sigur doriți să vă deconectați?")) {
+                        try {
+                          await handleLogout(authentication, router);
+                        } catch (error) {
+                          console.error("Logout failed:", error);
+                          alert("Eroare la deconectare. Vă rugăm să încercați din nou.");
+                        }
+                      }
                     }
                   }}
                 >

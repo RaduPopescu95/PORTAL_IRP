@@ -1,25 +1,78 @@
+"use client";
 import Link from "next/link";
+import { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { authentication } from "@/firebase";
+import { useRouter } from "next/navigation";
 
 const Form = () => {
+  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    // Validări
+    if (password !== confirmPassword) {
+      setError("Parolele nu se potrivesc.");
+      setLoading(false);
+      return;
+    }
+
+    if (!termsAccepted) {
+      setError("Trebuie să accepți termenii și condițiile.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await createUserWithEmailAndPassword(authentication, email, password);
+      // Redirecționează către lista-BICP după înregistrare
+      router.push("/lista-BICP");
+    } catch (error) {
+      console.error("Eroare la înregistrare:", error);
+      setError("Eroare la înregistrare. Verifică datele introduse.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <form action="#">
+    <form onSubmit={handleSubmit}>
       <div className="heading text-center">
-        <h3>Register to your account</h3>
+        <h3>Creează un cont nou</h3>
         <p className="text-center">
-          Already have an account?{" "}
+          Ai deja un cont?{" "}
           <Link href="/login" className="text-thm">
-            Login
+            Conectează-te
           </Link>
         </p>
       </div>
       {/* End .heading */}
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
 
       <div className="form-group input-group ">
         <input
           type="text"
           className="form-control"
           required
-          placeholder="User Name"
+          placeholder="Nume utilizator"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          disabled={loading}
         />
         <div className="input-group-prepend">
           <div className="input-group-text">
@@ -35,6 +88,9 @@ const Form = () => {
           className="form-control"
           required
           placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
         />
         <div className="input-group-prepend">
           <div className="input-group-text">
@@ -49,7 +105,10 @@ const Form = () => {
           type="password"
           className="form-control"
           required
-          placeholder="Password"
+          placeholder="Parolă"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
         />
         <div className="input-group-prepend">
           <div className="input-group-text">
@@ -64,7 +123,10 @@ const Form = () => {
           type="password"
           className="form-control"
           required
-          placeholder="Re-enter password"
+          placeholder="Confirmă parola"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          disabled={loading}
         />
         <div className="input-group-prepend">
           <div className="input-group-text">
@@ -81,46 +143,24 @@ const Form = () => {
           value=""
           required
           id="terms"
+          checked={termsAccepted}
+          onChange={(e) => setTermsAccepted(e.target.checked)}
+          disabled={loading}
         />
         <label className="form-check-label form-check-label" htmlFor="terms">
-          I have read and accept the Terms and Privacy Policy?
+          Am citit și accept Termenii și Politica de Confidențialitate
         </label>
       </div>
       {/* End .form-group */}
 
-      <button type="submit" className="btn btn-log w-100 btn-thm">
-        Register
+      <button 
+        type="submit" 
+        className="btn btn-log w-100 btn-thm"
+        disabled={loading}
+      >
+        {loading ? "Se înregistrează..." : "Înregistrează-te"}
       </button>
-      {/* login button */}
-
-      <div className="divide">
-        <span className="lf_divider">Or</span>
-        <hr />
-      </div>
-      {/* devider */}
-
-      <div className="row mt25">
-        <div className="col-lg-6">
-          <button
-            type="submit"
-            className="btn btn-block color-white bgc-fb mb0 w-100"
-          >
-            <i className="fa fa-facebook float-start mt5"></i> Facebook
-          </button>
-        </div>
-        {/* End .col */}
-
-        <div className="col-lg-6">
-          <button
-            type="submit"
-            className="btn btn-block color-white bgc-gogle mb0 w-100"
-          >
-            <i className="fa fa-google float-start mt5"></i> Google
-          </button>
-        </div>
-        {/* End .col */}
-      </div>
-      {/* more signin options */}
+      {/* register button */}
     </form>
   );
 };

@@ -1,5 +1,6 @@
-import dynamic from "next/dynamic";
+"use client";
 import CreateListing from "@/components/dashboard/creaza-oferta";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
 
 // export const metadata = {
 //   title: "Creaza discount || ExclusivMD",
@@ -8,10 +9,10 @@ import CreateListing from "@/components/dashboard/creaza-oferta";
 
 const index = () => {
   return (
-    <>
+    <ProtectedRoute>
       <CreateListing />
-    </>
+    </ProtectedRoute>
   );
 };
 
-export default dynamic(() => Promise.resolve(index), { ssr: false });
+export default index;

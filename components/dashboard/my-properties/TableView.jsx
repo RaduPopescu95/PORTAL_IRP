@@ -7,16 +7,30 @@ const TableView = ({
   oferte = [], 
   handleTestJournal, 
   deleteItem, 
-  copyToClipboard 
+  copyToClipboard,
+  isSelectMode = false,
+  selectedItems = new Set(),
+  onToggleSelect
 }) => {
   
   const tbodyContent = oferte?.map((item) => (
-    <tr key={item.id}>
+    <tr key={item.id} className={isSelectMode && selectedItems.has(item.id) ? 'table-row-selected' : ''}>
+      {/* Checkbox pentru selecție multiplă */}
+      {isSelectMode && (
+        <td className="vam text-center">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            checked={selectedItems.has(item.id)}
+            onChange={() => onToggleSelect && onToggleSelect(item.id)}
+            id={`table-select-${item.id}`}
+          />
+        </td>
+      )}
+      
       <td className="vam">
         <span className="document-type">
-          {item.numeAfisare}
-          {/* {item.numar}-{item.numeAfisare}-{item.titlu} */}
-          {/* {item.numar}-{item.numeAfisare}-{item.titlu} */}
+         {item.numeAfisare}
         </span>
       </td>
       <td className="vam">
@@ -28,41 +42,36 @@ const TableView = ({
           <button
             className="btn btn-sm btn-outline-primary me-2"
             onClick={() => handleTestJournal(item.id, "DOCX")}
-            title="Descarcă WORD"
+            disabled={!item.wordLink}
+            title="Descarcă DOCX"
           >
             <FaFileWord />
           </button>
           <button
             className="btn btn-sm btn-outline-danger me-2"
             onClick={() => handleTestJournal(item.id, "PDF")}
+            disabled={!item.pdfLink}
             title="Descarcă PDF"
           >
             <FaFilePdf />
           </button>
           <button
             className="btn btn-sm btn-outline-info me-2"
-            onClick={() => copyToClipboard(item.titlu)}
-            title="Copiază titlul"
-          >
-            <FaCopy />
-          </button>
-          <button
-            className="btn btn-sm btn-outline-secondary me-2"
             onClick={() => copyToClipboard(item.comunicat)}
             title="Copiază conținutul"
           >
-            <FaClipboard />
+            <FaCopy />
           </button>
+          {!isSelectMode && ( // Ascunde butonul de ștergere individuală în modul selecție
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => deleteItem(item.id)}
+              title="Șterge document"
+            >
+              <FaTrashAlt />
+            </button>
+          )}
         </div>
-      </td>
-      <td className="vam">
-        <button
-          className="btn btn-sm btn-outline-danger"
-          onClick={() => deleteItem(item.id)}
-          title="Șterge documentul"
-        >
-          <FaTrashAlt />
-        </button>
       </td>
     </tr>
   ));
@@ -79,6 +88,35 @@ const TableView = ({
         <table className="table table-modern">
           <thead>
             <tr>
+              {/* Checkbox header pentru selecție multiplă */}
+              {isSelectMode && (
+                <th scope="col" className="text-center" style={{width: '50px'}}>
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    checked={oferte.length > 0 && selectedItems.size === oferte.length}
+                    onChange={() => {
+                      if (selectedItems.size === oferte.length) {
+                        // Deselect all
+                        oferte.forEach(item => {
+                          if (selectedItems.has(item.id)) {
+                            onToggleSelect && onToggleSelect(item.id);
+                          }
+                        });
+                      } else {
+                        // Select all
+                        oferte.forEach(item => {
+                          if (!selectedItems.has(item.id)) {
+                            onToggleSelect && onToggleSelect(item.id);
+                          }
+                        });
+                      }
+                    }}
+                    title={selectedItems.size === oferte.length ? "Deselectează toate" : "Selectează toate"}
+                  />
+                </th>
+              )}
+              
               <th scope="col">
                 <FaFileAlt className="me-2" />
                 Document
@@ -93,13 +131,11 @@ const TableView = ({
                 <FaDownload className="me-2" />
                 Acțiuni
               </th>
-              <th scope="col">
-                <FaTrashAlt className="me-2" />
-                Șterge
-              </th>
             </tr>
           </thead>
-          <tbody className="table-tbody">{tbodyContent}</tbody>
+          <tbody>
+            {tbodyContent}
+          </tbody>
         </table>
       )}
     </div>

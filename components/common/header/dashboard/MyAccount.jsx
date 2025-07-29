@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { handleLogout } from "@/utils/authUtils";
+import { authentication } from "@/firebase";
 
 const MyAccount = () => {
   const { userData, currentUser } = useAuth();
@@ -47,12 +48,18 @@ const MyAccount = () => {
                 ? { color: "#0000FF" }
                 : undefined
             }
-            onClick={(e) => {
+            onClick={async (e) => {
               // Prevenim comportamentul default al link-ului dacă este necesar
               if (item.name === "Deconectare") {
                 e.preventDefault();
-                handleLogout();
-                router.push("/");
+                if (window.confirm("Sigur doriți să vă deconectați?")) {
+                  try {
+                    await handleLogout(authentication, router);
+                  } catch (error) {
+                    console.error("Logout failed:", error);
+                    alert("Eroare la deconectare. Vă rugăm să încercați din nou.");
+                  }
+                }
               } else {
                 console.log("other...");
               }

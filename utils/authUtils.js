@@ -76,13 +76,37 @@ export const handleChangePassword = async (currentPassword, newPassword) => {
   }
 };
 
-export const handleLogout = async () => {
-  console.log("Start....");
+export const handleLogout = async (auth, router) => {
+  console.log("Starting logout process...");
   try {
-    await signOut(authentication);
+    // Clear localStorage data
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem("isGuestUser");
+      localStorage.removeItem("bicpViewMode");
+      // Clear any other app-specific localStorage items
+    }
+    
+    // Sign out from Firebase
+    await signOut(auth || authentication);
+    console.log("Logout successful");
+    
+    // Redirect to login page if router is provided
+    if (router) {
+      router.push("/login");
+    } else {
+      // Fallback redirect
+      if (typeof window !== 'undefined') {
+        window.location.href = "/login";
+      }
+    }
   } catch (error) {
-    console.error(error);
-    Alert.alert("Error", "Failed to log out.");
+    console.error("Logout error:", error);
+    
+    // Web-friendly error notification
+    if (typeof window !== 'undefined') {
+      alert("Eroare la deconectare. Vă rugăm să încercați din nou.");
+    }
+    throw error;
   }
 };
 

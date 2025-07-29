@@ -36,25 +36,58 @@ const styles = {
   },
 };
 
-const TableData = ({ oferte, onRefresh }) => {
-  console.log("TableData oferte:", oferte); // Check what is received exactly
-
+const TableData = ({ 
+  oferte, 
+  onRefresh,
+  handleTestJournal,
+  deleteItem,
+  copyToClipboard,
+  isSelectMode = false,
+  selectedItems = new Set(),
+  onToggleSelect
+}) => {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const isMobile = useIsMobile();
 
-  const copyToClipboard = async (text) => {
+  // Fallback functions dacă nu sunt trimise ca props
+  const finalCopyToClipboard = copyToClipboard || (async (text) => {
     try {
       await navigator.clipboard.writeText(text);
       alert("Textul a fost copiat: " + text);
     } catch (err) {
       console.error("Failed to copy: ", err);
     }
-  };
+  });
+
+  const finalHandleTestJournal = handleTestJournal || ((itemId, format) => {
+    const item = oferte.find(item => item.id === itemId);
+    if (item) {
+      if (format === "DOCX" && item.wordLink) {
+        window.open(item.wordLink, '_blank');
+      } else if (format === "PDF" && item.pdfLink) {
+        window.open(item.pdfLink, '_blank');
+      } else {
+        alert(`Link-ul pentru ${format} nu este disponibil.`);
+      }
+    }
+  });
+
+  const finalDeleteItem = deleteItem || (async (itemId) => {
+    try {
+      await deleteFirestoreItem("Comunicate", itemId);
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (error) {
+      console.error("Error deleting BICP item:", error);
+      alert("Eroare la ștergerea documentului!");
+    }
+  });
 
   const handleDeleteClick = (item) => {
-    setSelectedItem(item); // Salvează ID-ul elementului selectat
+    setSelectedItem(item); // Salvează elementul selectat
     setShowModal(true); // Afișează modalul
   };
 
@@ -65,25 +98,14 @@ const TableData = ({ oferte, onRefresh }) => {
 
   // Logica de ștergere a elementului din Firestore
   const handleConfirmDelete = async () => {
+    if (!selectedItem) return;
+    
     setIsLoading(true);
-
     try {
-      console.log("Deleting BICP item with ID:", selectedItem.id);
-
-      // Șterge documentul din colecția Comunicate
-      await deleteFirestoreItem("Comunicate", selectedItem.id);
-
+      await finalDeleteItem(selectedItem.id);
       setShowModal(false); // Închide modalul după ștergere
-      
-      // Reîmprospătează lista
-      if (onRefresh) {
-        onRefresh();
-      } else {
-        window.location.reload();
-      }
     } catch (error) {
-      console.error("Error deleting BICP item:", error);
-      alert("Eroare la ștergerea documentului!");
+      console.error("Error in delete confirmation:", error);
     } finally {
       setIsLoading(false);
     }
@@ -109,40 +131,61 @@ const TableData = ({ oferte, onRefresh }) => {
   }
 
   let cardContent = oferte?.map((item) => (
-    <div key={item.id} className="bicp-card">
+    <div key={item.id} className={`bicp-card ${isSelectMode && selectedItems.has(item.id) ? 'selected' : ''}`}>
+      {/* Checkbox pentru selecție multiplă */}
+      {isSelectMode && (
+        <div className="card-select-checkbox">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            checked={selectedItems.has(item.id)}
+            onChange={() => onToggleSelect && onToggleSelect(item.id)}
+            id={`select-${item.id}`}
+          />
+          <label htmlFor={`select-${item.id}`} className="form-check-label sr-only">
+            Selectează documentul {item.numar}
+          </label>
+        </div>
+      )}
+      
       <div className="card-header">
         <div className="document-type">
           <span className="type-badge">{item.numeAfisare}</span>
         </div>
-        <div className="document-number">
-          <span className="number-text">#{item.numar}</span>
-          <span className="date-text">{item.data}</span>
-        </div>
+
       </div>
       
       <div className="card-body">
-        <h4 className="document-title">{item.numar}-{item.numeAfisare}-{item.titlu}</h4>
+        <h4 className="document-title">{item.titlu}</h4>
         
         <div className="card-actions">
           <div className="download-section">
             <h6><FaDownload /> Descarcă:</h6>
             <div className="action-buttons">
-              <a href={item.wordLink} target="_blank" rel="noopener noreferrer" className="download-btn word-btn">
+              <button 
+                onClick={() => finalHandleTestJournal(item.id, "DOCX")} 
+                className="download-btn word-btn"
+                disabled={!item.wordLink}
+              >
                 <FaFileWord /> WORD
-              </a>
-              <a href={item.pdfLink} target="_blank" rel="noopener noreferrer" className="download-btn pdf-btn">
+              </button>
+              <button 
+                onClick={() => finalHandleTestJournal(item.id, "PDF")} 
+                className="download-btn pdf-btn"
+                disabled={!item.pdfLink}
+              >
                 <FaFilePdf /> PDF
-              </a>
+              </button>
             </div>
           </div>
           
           <div className="copy-section">
             <h6><FaClipboard /> Copiază:</h6>
             <div className="copy-buttons">
-              <button onClick={() => copyToClipboard(item.titlu)} className="copy-btn">
+              <button onClick={() => finalCopyToClipboard(item.titlu)} className="copy-btn">
                 <FaCopy /> Titlu
               </button>
-              <button onClick={() => copyToClipboard(item.comunicat)} className="copy-btn">
+              <button onClick={() => finalCopyToClipboard(item.comunicat)} className="copy-btn">
                 <FaCopy /> Conținut
               </button>
             </div>
@@ -151,13 +194,15 @@ const TableData = ({ oferte, onRefresh }) => {
       </div>
       
       <div className="card-footer">
-        <button 
-          className="delete-btn"
-          onClick={() => handleDeleteClick(item)}
-          title="Șterge document"
-        >
-          <FaTrashAlt /> Șterge Document
-        </button>
+        {!isSelectMode && ( // Ascunde butonul de ștergere individuală în modul selecție
+          <button 
+            className="delete-btn"
+            onClick={() => handleDeleteClick(item)}
+            title="Șterge document"
+          >
+            <FaTrashAlt /> Șterge Document
+          </button>
+        )}
       </div>
     </div>
   ));

@@ -1,25 +1,62 @@
+"use client";
 import Link from "next/link";
+import { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { authentication } from "@/firebase";
+import { useRouter } from "next/navigation";
 
 const Form = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      await signInWithEmailAndPassword(authentication, email, password);
+      // Redirecționează către lista-BICP după login
+      router.push("/lista-BICP");
+    } catch (error) {
+      console.error("Eroare la autentificare:", error);
+      setError("Email sau parolă incorectă.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <form action="#">
-      <div className="heading text-center">
-        <h3>Login to your account</h3>
+    <form onSubmit={handleSubmit}>
+      {/* <div className="heading text-center">
+        <h3>Autentificare în cont</h3>
         <p className="text-center">
-          Dont have an account?{" "}
+          Nu ai un cont?{" "}
           <Link href="/register" className="text-thm">
-            Sign Up!
+            Înregistrează-te!
           </Link>
         </p>
-      </div>
+      </div> */}
       {/* End .heading */}
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
 
       <div className="input-group mb-2 mr-sm-2">
         <input
-          type="text"
+          type="email"
           className="form-control"
           required
           placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
         />
         <div className="input-group-prepend">
           <div className="input-group-text">
@@ -34,7 +71,10 @@ const Form = () => {
           type="password"
           className="form-control"
           required
-          placeholder="Password"
+          placeholder="Parolă"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
         />
         <div className="input-group-prepend">
           <div className="input-group-text">
@@ -55,48 +95,23 @@ const Form = () => {
           className="form-check-label form-check-label"
           htmlFor="remeberMe"
         >
-          Remember me
+          Ține-mă minte
         </label>
 
         <a className="btn-fpswd float-end" href="#">
-          Forgot password?
+          Ai uitat parola?
         </a>
       </div>
       {/* End .form-group */}
 
-      <button type="submit" className="btn btn-log w-100 btn-thm">
-        Log In
+      <button 
+        type="submit" 
+        className="btn btn-log w-100 btn-thm"
+        disabled={loading}
+      >
+        {loading ? "Se conectează..." : "Conectează-te"}
       </button>
       {/* login button */}
-
-      <div className="divide">
-        <span className="lf_divider">Or</span>
-        <hr />
-      </div>
-      {/* devider */}
-
-      <div className="row mt25">
-        <div className="col-lg-6">
-          <button
-            type="submit"
-            className="btn btn-block color-white bgc-fb mb0 w-100"
-          >
-            <i className="fa fa-facebook float-start mt5"></i> Facebook
-          </button>
-        </div>
-        {/* End .col */}
-
-        <div className="col-lg-6">
-          <button
-            type="submit"
-            className="btn btn2 btn-block color-white bgc-gogle mb0 w-100"
-          >
-            <i className="fa fa-google float-start mt5"></i> Google
-          </button>
-        </div>
-        {/* End .col */}
-      </div>
-      {/* more signin options */}
     </form>
   );
 };

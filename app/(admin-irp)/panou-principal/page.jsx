@@ -1,5 +1,6 @@
-import dynamic from "next/dynamic";
+"use client";
 import MyDashboard from "@/components/dashboard/my-dashboard";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
 
 // export const metadata = {
 //   title: "Dashboard || ExclusivMD",
@@ -8,10 +9,10 @@ import MyDashboard from "@/components/dashboard/my-dashboard";
 
 const index = () => {
   return (
-    <>
+    <ProtectedRoute>
       <MyDashboard />
-    </>
+    </ProtectedRoute>
   );
 };
 
-export default dynamic(() => Promise.resolve(index), { ssr: false });
+export default index;

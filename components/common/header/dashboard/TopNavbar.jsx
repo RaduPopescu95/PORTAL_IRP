@@ -95,10 +95,14 @@ const TopNavbar = ({ partenerId }) => {
   ];
 
   const handleLogoutClick = async () => {
-    try {
-      await handleLogout(authentication, router);
-    } catch (error) {
-      console.error("Logout failed:", error);
+    if (window.confirm("Sigur doriți să vă deconectați?")) {
+      try {
+        console.log("Starting logout from TopNavbar...");
+        await handleLogout(authentication, router);
+      } catch (error) {
+        console.error("Logout failed:", error);
+        alert("Eroare la deconectare. Vă rugăm să încercați din nou.");
+      }
     }
   };
 

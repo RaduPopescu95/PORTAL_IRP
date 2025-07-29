@@ -12,13 +12,13 @@ const SearchBox = ({ onSearch }) => {
         <div className="search-icon">
           <FaSearch />
         </div>
-        <input
+      <input
           className="modern-search-input"
-          type="search"
+        type="search"
           placeholder="Caută în titlu, conținut sau nume afișare..."
           aria-label="Căutare în documente BICP"
-          onChange={handleInputChange}
-        />
+        onChange={handleInputChange}
+      />
         <div className="search-hint">
           <span><FaLightbulb /> Tip: caută rapid după cuvinte cheie</span>
         </div>

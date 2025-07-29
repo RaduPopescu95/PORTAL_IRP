@@ -3,6 +3,7 @@ import HomeMain from "./(homes)/home-4/page";
 import ListaBICP from "./(admin-irp)/lista-BICP/page";
 import { AuthProvider } from "@/context/AuthContext";
 import MapContainer from "./(admin-irp)/harta/page";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
 
 // export const metadata = {
 //   title: "ExclusivMD - Oferte Exclusive pentru cadre medicale",
@@ -13,7 +14,9 @@ import MapContainer from "./(admin-irp)/harta/page";
 export default function Home() {
   return (
     <Wrapper>
-      <ListaBICP />
+      <ProtectedRoute>
+        <ListaBICP />
+      </ProtectedRoute>
       {/* <MapContainer/> */}
     </Wrapper>
   );
