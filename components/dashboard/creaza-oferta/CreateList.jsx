@@ -686,36 +686,7 @@ const CreateList = ({ oferta }) => {
           </div>
         </div>
 
-        {/* Debug Button - doar în development sau pentru debugging */}
-        {(process.env.NODE_ENV === 'development' || debugInfo.environment === 'production') && (
-          <div className="col-lg-12 mb-3">
-            <div className="d-flex gap-2 flex-wrap">
-              <button
-                type="button" 
-                onClick={testFirestoreConnection}
-                className="btn-modern-secondary"
-                style={{ fontSize: '12px', padding: '6px 12px' }}
-              >
-                🔧 Test Firestore
-              </button>
-              <button
-                type="button" 
-                onClick={testApiGeneration}
-                className="btn-modern-secondary"
-                style={{ fontSize: '12px', padding: '6px 12px' }}
-              >
-                🧪 Test API
-              </button>
-            </div>
-            {debugInfo && (
-              <div style={{ fontSize: '11px', marginTop: '5px', color: '#666' }}>
-                Environment: {debugInfo.environment} | 
-                Success: {debugInfo.success ? '✅' : '❌'} | 
-                Duration: {debugInfo.duration}ms
-              </div>
-            )}
-      </div>
-        )}
+    
 
         {/* Submit Button */}
       <div className="col-xl-12">

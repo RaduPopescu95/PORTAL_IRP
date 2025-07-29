@@ -14,7 +14,9 @@ const TableView = ({
     <tr key={item.id}>
       <td className="vam">
         <span className="document-type">
-          {item.numar}-{item.numeAfisare}-{item.titlu}
+          {item.numeAfisare}
+          {/* {item.numar}-{item.numeAfisare}-{item.titlu} */}
+          {/* {item.numar}-{item.numeAfisare}-{item.titlu} */}
         </span>
       </td>
       <td className="vam">
