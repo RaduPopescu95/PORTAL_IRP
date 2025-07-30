@@ -1,23 +1,32 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 const ProtectedRoute = ({ children, requiredAuth = true }) => {
   const { currentUser, loading } = useAuth();
   const router = useRouter();
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
     // Doar dacă nu se mai încarcă și este necesară autentificarea
-    if (!loading && requiredAuth) {
+    if (!loading && requiredAuth && !hasRedirected) {
       if (!currentUser) {
         // Utilizatorul nu este autentificat, redirecționează către login
         console.log("Utilizator neautentificat - redirecționare către /login");
+        setHasRedirected(true);
         router.push("/login");
         return;
       }
     }
-  }, [currentUser, loading, requiredAuth, router]);
+  }, [currentUser, loading, requiredAuth, router, hasRedirected]);
+
+  // Reset redirect flag when user changes
+  useEffect(() => {
+    if (currentUser) {
+      setHasRedirected(false);
+    }
+  }, [currentUser]);
 
   // Afișează loading în timpul verificării autentificării
   if (loading) {

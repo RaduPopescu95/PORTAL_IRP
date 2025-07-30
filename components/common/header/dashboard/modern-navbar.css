@@ -17,7 +17,7 @@
   --bottom-navbar-height: 70px;
 }
 
-/* Desktop Top Navbar */
+/* Top Navbar - Desktop */
 .top-navbar {
   position: sticky;
   top: 0;
@@ -81,6 +81,7 @@
   justify-content: center;
 }
 
+/* Menu Items - Butoane care arată ca link-uri */
 .menu-item {
   display: flex;
   align-items: center;
@@ -93,6 +94,13 @@
   font-size: 14px;
   transition: all 0.3s ease;
   white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto !important;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  position: relative;
+  z-index: 10;
 }
 
 .menu-item:hover {
@@ -223,6 +231,13 @@
   transition: all 0.3s ease;
   border-radius: var(--navbar-radius);
   min-width: 60px;
+  cursor: pointer;
+  pointer-events: auto !important;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  position: relative;
+  z-index: 10;
 }
 
 .bottom-item:hover {
@@ -323,13 +338,23 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px;
-  border-radius: var(--navbar-radius);
+  padding: 16px 24px;
   text-decoration: none;
-  color: var(--navbar-text-light);
+  color: var(--navbar-text);
   font-weight: 500;
   font-size: 16px;
   transition: all 0.3s ease;
+  border-radius: var(--navbar-radius);
+  margin-bottom: 4px;
+  cursor: pointer;
+  pointer-events: auto !important;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+  position: relative;
+  z-index: 10;
 }
 
 .mobile-menu-item:hover {

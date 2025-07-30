@@ -40,32 +40,46 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = authentication.onAuthStateChanged(async (user) => {
-      console.log("start use effect from auth context", user);
+      console.log("🔐 AUTH STATE CHANGE:", {
+        user: user ? "LOGGED IN" : "LOGGED OUT",
+        uid: user?.uid,
+        email: user?.email
+      });
+      
+      // Setează currentUser IMEDIAT
+      setCurrentUser(user);
+      
+      // Setează loading = false IMEDIAT după ce avem starea de auth
+      // Nu așteptăm operațiile Firestore pentru roles
+      setLoading(false);
+      console.log("✅ AUTH LOADING COMPLETE - User state set");
+      
       if (user) {
         try {
           const userDataFromFirestore = await handleGetUserInfo();
           setUserData(userDataFromFirestore);
+          console.log("📊 USER DATA LOADED from Firestore");
         } catch (error) {
-          console.error("Failed to fetch user data:", error);
+          console.error("❌ Failed to fetch user data:", error);
         }
+      } else {
+        // Curăță userData dacă nu e user logat
+        setUserData(null);
+        console.log("🧹 USER DATA CLEARED - user logged out");
       }
 
-      // Setează currentUser
-      setCurrentUser(user);
-
-      // Verifică dacă user-ul este admin sau powerAdmin folosind colecții din Firestore
+      // Verifică rolurile în background - nu blochează loading
       if (user?.uid) {
         try {
           // Presupunem că colecția de administratori se numește "Admins"
           const adminDocs = await handleGetFirestore("Admins");
-          // Verificăm dacă user.uid apare fie ca document ID, fie în câmpul "uid"
           const isUserAdmin = adminDocs.some(
             (doc) => doc.uid === user.uid || doc.id === user.uid
           );
-          console.log("isadmin...", isUserAdmin)
+          console.log("🔑 isAdmin...", isUserAdmin)
           setIsAdmin(isUserAdmin);
         } catch (error) {
-          console.error("Error checking admin status:", error);
+          console.error("❌ Error checking admin status:", error);
           setIsAdmin(false);
         }
 
@@ -75,34 +89,35 @@ export const AuthProvider = ({ children }) => {
           const isUserPowerAdmin = powerAdminDocs.some(
             (doc) => doc.uid === user.uid || doc.id === user.uid
           );
-          console.log("isPowerAdmin...", isUserPowerAdmin)
+          console.log("👑 isPowerAdmin...", isUserPowerAdmin)
           setIsPowerAdmin(isUserPowerAdmin);
         } catch (error) {
-          console.error("Error checking power admin status:", error);
+          console.error("❌ Error checking power admin status:", error);
           setIsPowerAdmin(false);
         }
       } else {
         // Dacă nu e logat sau nu are uid
         setIsAdmin(false);
         setIsPowerAdmin(false);
+        console.log("🚫 ROLES CLEARED - no user or uid");
       }
 
+      // Încarcă judete în background
       try {
         const judeteRomania = await handleGetFirestore("Judete");
         setJudete(judeteRomania);
       } catch (error) {
-        console.error("Failed to fetch judete data in context auth:", error);
+        console.error("❌ Failed to fetch judete data in context auth:", error);
       }
 
+      // Verifică guest user din localStorage
       try {
         const guestUserValue = localStorage.getItem("isGuestUser");
         setIsGuestUser(guestUserValue === "true");
       } catch (e) {
-        console.error("Failed to fetch isGuestUser from localStorage:", e);
+        console.error("❌ Failed to fetch isGuestUser from localStorage:", e);
         setIsGuestUser(false);
       }
-
-      setLoading(false);
     });
 
     return unsubscribe;

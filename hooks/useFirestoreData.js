@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   collection,
   query,
@@ -20,17 +20,12 @@ export const useFirestoreData = ({
   sortBy = "numar",
   sortOrder = "desc",
 }) => {
-  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({});
   const [allData, setAllData] = useState([]); // Store all data for client-side filtering
-
-  // Calculate total pages
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   // Fetch data from Firestore
   const fetchData = useCallback(async () => {
@@ -49,7 +44,6 @@ export const useFirestoreData = ({
       }));
 
       setAllData(fetchedData);
-      setTotalItems(fetchedData.length);
     } catch (err) {
       console.error("Error fetching Firestore data:", err);
       setError(err);
@@ -63,12 +57,10 @@ export const useFirestoreData = ({
     fetchData();
   }, [fetchData]);
 
-  // Apply filters whenever allData, searchTerm, or filters change
-  useEffect(() => {
+  // Calculate filtered and sorted data using useMemo to prevent infinite loops
+  const filteredAndSortedData = useMemo(() => {
     if (!Array.isArray(allData) || allData.length === 0) {
-      setData([]);
-      setTotalItems(0);
-      return;
+      return [];
     }
 
     let filteredData = [...allData];
@@ -179,21 +171,26 @@ export const useFirestoreData = ({
       return 0;
     });
 
-    // Update total items after filtering
-    setTotalItems(filteredData.length);
+    return filteredData;
+  }, [allData, searchTerm, filters, sortBy, searchFields]);
 
-    // Apply pagination
+  // Calculate paginated data using useMemo
+  const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const paginatedData = filteredData.slice(startIndex, endIndex);
+    return filteredAndSortedData.slice(startIndex, endIndex);
+  }, [filteredAndSortedData, currentPage, itemsPerPage]);
 
-    setData(paginatedData);
-  }, [allData, searchTerm, filters, sortBy, currentPage, itemsPerPage, searchFields]);
+  // Calculate totalItems directly from filtered data
+  const totalItems = filteredAndSortedData.length;
+  
+  // Calculate total pages
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  // Reset to page 1 when search or filters change
+  // Reset to page 1 when search or filters change (using useEffect without setState conflicts)
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filters]);
+  }, [searchTerm, JSON.stringify(filters)]);
 
   // Handle search
   const handleSearch = useCallback((newSearchTerm) => {
@@ -277,7 +274,7 @@ export const useFirestoreData = ({
   }, []);
 
   return {
-    data,
+    data: paginatedData,
     loading,
     error,
     totalItems,

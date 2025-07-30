@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 // Hook personalizat pentru gestionarea datelor în tabele cu paginare și căutare
 export function useDataWithPaginationAndSearch(
@@ -9,21 +9,23 @@ export function useDataWithPaginationAndSearch(
   itemsPerPage = 10
 ) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentData, setCurrentData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [totalPages, setTotalPages] = useState(0);
 
+  // Resetează la pagina 1 când se schimbă termenul de căutare
   useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // Calculează datele filtrate folosind useMemo pentru performance
+  const filteredData = useMemo(() => {
     // Verifică dacă data este un array valid
     if (!Array.isArray(data)) {
       console.warn("useDataWithPaginationAndSearch: data is not an array", data);
-      setCurrentData([]);
-      setTotalPages(0);
-      return;
+      return [];
     }
 
     // Aplică filtrarea folosind câmpul specificat
-    const filteredData = data.filter((item) => {
+    return data.filter((item) => {
       // Verifică dacă item și searchField există
       if (!item || typeof item !== 'object' || !item[searchField]) {
         return false;
@@ -35,33 +37,39 @@ export function useDataWithPaginationAndSearch(
       
       return itemValue.includes(searchValue);
     });
+  }, [data, searchField, searchTerm]);
 
-    // Calculează totalul de pagini
-    const newTotalPages = Math.ceil(filteredData.length / itemsPerPage);
-    setTotalPages(newTotalPages);
+  // Calculează totalul de pagini
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredData.length / itemsPerPage);
+  }, [filteredData.length, itemsPerPage]);
 
-    // Resetează la pagina 1 dacă pagina curentă este mai mare decât totalul
-    const validCurrentPage = currentPage > newTotalPages ? 1 : currentPage;
+  // Validează și ajustează currentPage dacă e necesar
+  const validCurrentPage = useMemo(() => {
+    if (totalPages === 0) return 1;
+    if (currentPage > totalPages) return 1;
+    return currentPage;
+  }, [currentPage, totalPages]);
+
+  // Calculează datele pentru pagina curentă
+  const currentData = useMemo(() => {
+    const indexOfLastItem = validCurrentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    return filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  }, [filteredData, validCurrentPage, itemsPerPage]);
+
+  // Actualizează currentPage doar dacă e diferit de validCurrentPage
+  useEffect(() => {
     if (validCurrentPage !== currentPage) {
       setCurrentPage(validCurrentPage);
     }
-
-    // Setează datele curente pentru pagina activă
-    const indexOfLastItem = validCurrentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    setCurrentData(filteredData.slice(indexOfFirstItem, indexOfLastItem));
-  }, [data, currentPage, itemsPerPage, searchTerm, searchField]);
-
-  // Resetează la pagina 1 când se schimbă termenul de căutare
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
+  }, [validCurrentPage, currentPage]);
 
   return {
     currentData,
     setCurrentPage,
     totalPages,
     setSearchTerm,
-    currentPage,
+    currentPage: validCurrentPage,
   };
 }

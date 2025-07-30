@@ -13,7 +13,7 @@ import "../../modern-dashboard.css";
 
 
 import { db } from "@/firebase";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   collection,
   endAt,
@@ -59,8 +59,7 @@ const index = ({
   
   const dataSource = isNewDataSystem ? data : oferte;
   
-  const [originalData, setOriginalData] = useState(dataSource || []);
-  const [filteredData, setFilteredData] = useState(dataSource || []);
+
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm || "");
   const [currentFilters, setCurrentFilters] = useState(filters || {});
   const [lastRefresh, setLastRefresh] = useState(Date.now());
@@ -141,6 +140,51 @@ const index = ({
     }
   }, [viewMode]);
 
+  // Calculate data based on system type using useMemo to prevent infinite loops
+  const calculatedOriginalData = useMemo(() => {
+    return isNewDataSystem ? data : (oferte || []);
+  }, [data, oferte, isNewDataSystem]);
+
+  // Aplică filtrele pe datele locale (pentru sistemul vechi)
+  const applyFilters = useCallback((filters) => {
+    if (!calculatedOriginalData || !Array.isArray(calculatedOriginalData)) {
+      return [];
+    }
+
+    let filtered = [...calculatedOriginalData];
+
+    // Aplică filtrul de stare
+    if (filters.stare && filters.stare !== "toate") {
+      filtered = filtered.filter(item => item.stare === filters.stare);
+    }
+
+    // Aplică filtrul de tip document
+    if (filters.tipDocument && filters.tipDocument !== "toate") {
+      filtered = filtered.filter(item => item.tipDocument === filters.tipDocument);
+    }
+
+    // Aplică filtrul de data
+    if (filters.dataInceput && filters.dataSfarsit) {
+      const startDate = new Date(filters.dataInceput);
+      const endDate = new Date(filters.dataSfarsit);
+      filtered = filtered.filter(item => {
+        const itemDate = new Date(item.dataCreare || item.createdAt);
+        return itemDate >= startDate && itemDate <= endDate;
+      });
+    }
+
+    return filtered;
+  }, [calculatedOriginalData]);
+
+  const calculatedFilteredData = useMemo(() => {
+    if (isNewDataSystem) {
+      return data;
+    } else {
+      // Pentru sistemul vechi, aplică filtrele
+      return applyFilters(currentFilters);
+    }
+  }, [data, isNewDataSystem, applyFilters, currentFilters]);
+
   // Hook pentru paginația locală (folosit când nu avem sistemul nou)
   const {
     currentData,
@@ -148,7 +192,7 @@ const index = ({
     totalPages: localTotalPages,
     setSearchTerm: setPaginationSearchTerm,
     currentPage: localCurrentPage,
-  } = useDataWithPaginationAndSearch(filteredData, "titlu");
+  } = useDataWithPaginationAndSearch(calculatedFilteredData, "titlu");
 
   // Determină care paginație să folosim
   const finalCurrentData = isNewDataSystem ? data : currentData;
@@ -185,16 +229,7 @@ const index = ({
     alert("Funcția de ștergere nu este disponibilă în modul actual.");
   });
 
-  // Actualizează datele când se schimbă props-urile
-  useEffect(() => {
-    if (isNewDataSystem) {
-      setOriginalData(data);
-      setFilteredData(data);
-    } else {
-      setOriginalData(oferte || []);
-      setFilteredData(oferte || []);
-    }
-  }, [data, oferte, isNewDataSystem]);
+
 
   // Gestionează căutarea
   const handleSearchChange = (newSearchTerm) => {
@@ -212,71 +247,12 @@ const index = ({
     if (isNewDataSystem && handleFilterChange) {
       handleFilterChange(newFilters);
     } else {
-      // Aplică filtrele local pentru sistemul vechi
-      applyFilters(newFilters);
+      // Pentru sistemul vechi, filtrarea se va face în useMemo calculatedFilteredData
+      // Nu e nevoie să facem nimic aici
     }
   };
 
-  // Aplică filtrele pe datele locale (pentru sistemul vechi)
-  const applyFilters = (filters) => {
-    if (!originalData || !Array.isArray(originalData)) {
-      setFilteredData([]);
-      return;
-    }
 
-    let filtered = [...originalData];
-
-    // Aplică filtrele unul câte unul
-    Object.keys(filters).forEach(key => {
-      const value = filters[key];
-      if (value && value !== "") {
-        switch (key) {
-          case "tipDocument":
-            if (value !== "toate") {
-              filtered = filtered.filter(item => item.numeAfisare === value);
-            }
-            break;
-          case "semnatar":
-            if (value !== "toti") {
-              filtered = filtered.filter(item => item.semnatar === value);
-            }
-            break;
-          case "dataInceput":
-          case "dataStart": // Compatibilitate cu numele din Filtering.jsx
-            if (value) {
-              filtered = filtered.filter(item => {
-                const itemDate = new Date(item.data.split('/').reverse().join('-'));
-                const filterDate = new Date(value);
-                return itemDate >= filterDate;
-              });
-            }
-            break;
-          case "dataSfarsit":
-          case "dataEnd": // Compatibilitate cu numele din Filtering.jsx
-            if (value) {
-              filtered = filtered.filter(item => {
-                const itemDate = new Date(item.data.split('/').reverse().join('-'));
-                const filterDate = new Date(value);
-                return itemDate <= filterDate;
-              });
-            }
-            break;
-          case "numarMin":
-            if (value) {
-              filtered = filtered.filter(item => Number(item.numar) >= Number(value));
-            }
-            break;
-          case "numarMax":
-            if (value) {
-              filtered = filtered.filter(item => Number(item.numar) <= Number(value));
-            }
-            break;
-        }
-      }
-    });
-
-    setFilteredData(filtered);
-  };
 
   // Forțează reîmprospătarea datelor
   const forceRefresh = () => {
@@ -322,7 +298,7 @@ const index = ({
                 <div className="col-lg-12 mb10">
                   <div className="breadcrumb_content style2 mb30-991">
                     <h2 className="breadcrumb_title">Lista BI/CP {an}</h2>
-                    <p>Total: {isNewDataSystem ? totalItems : filteredData.length} documente</p>
+                    <p>Total: {isNewDataSystem ? totalItems : calculatedFilteredData.length} documente</p>
                     <button 
                       onClick={forceRefresh}
                       className="btn btn-sm btn-outline-primary mt-2"
