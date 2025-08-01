@@ -147,7 +147,7 @@ const CreateList = ({ oferta }) => {
     {
       pentru: "",
       functia: "INSPECTOR ȘEF",
-      grad: "Locotenent-colonel",
+      grad: "Colonel",
       nume: "COMUNICAT DE PRESĂ",
     },
   ];

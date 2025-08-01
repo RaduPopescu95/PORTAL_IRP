@@ -309,7 +309,7 @@ const CreateList = ({ oferta }) => {
     {
       pentru: "",
       functia: "INSPECTOR ȘEF",
-      grad: "Locotenent-colonel",
+      grad: "Colonel",
       numeSemnatar: "ing. FLOREA Cristian-Claudiu",
     },
   ];
